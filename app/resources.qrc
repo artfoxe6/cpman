@@ -1,0 +1,16 @@
+<RCC>
+  <qresource prefix="/icons/light">
+    <file alias="tray_light.svg">icons/light/tray_light.svg</file>
+    <file alias="heart_empty_light.svg">icons/light/heart_empty_light.svg</file>
+    <file alias="heart_filled_light.svg">icons/light/heart_filled_light.svg</file>
+    <file alias="search_light.svg">icons/light/search_light.svg</file>
+    <file alias="db_light.svg">icons/light/db_light.svg</file>
+  </qresource>
+  <qresource prefix="/icons/dark">
+    <file alias="tray_dark.svg">icons/dark/tray_dark.svg</file>
+    <file alias="heart_empty_dark.svg">icons/dark/heart_empty_dark.svg</file>
+    <file alias="heart_filled_dark.svg">icons/dark/heart_filled_dark.svg</file>
+    <file alias="search_dark.svg">icons/dark/search_dark.svg</file>
+    <file alias="db_dark.svg">icons/dark/db_dark.svg</file>
+  </qresource>
+</RCC>
