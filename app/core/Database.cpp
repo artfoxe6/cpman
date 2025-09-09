@@ -49,6 +49,8 @@ bool Database::migrate() {
     }
     q.exec("CREATE INDEX IF NOT EXISTS idx_items_created_at ON items(created_at DESC)");
     q.exec("CREATE INDEX IF NOT EXISTS idx_items_fav ON items(is_favorite)");
+    q.exec("CREATE INDEX IF NOT EXISTS idx_items_hash ON items(hash)");
+    q.exec("CREATE INDEX IF NOT EXISTS idx_items_text ON items(text)");
 
     // Ensure new columns exist (schema migrations)
     // Check existing columns
@@ -231,4 +233,26 @@ bool Database::deleteOlderThan(qint64 cutoffMs, QStringList* outMediaPaths) {
     q.addBindValue(cutoffMs);
     if (!q.exec()) return false;
     return true;
+}
+
+bool Database::findByExactText(const QString& text, HistoryItem* outItem) {
+    QSqlQuery q(m_db);
+    q.prepare("SELECT * FROM items WHERE type='text' AND text=? ORDER BY created_at DESC LIMIT 1");
+    q.addBindValue(text);
+    if (q.exec() && q.next()) {
+        if (outItem) *outItem = fromQuery(q);
+        return true;
+    }
+    return false;
+}
+
+bool Database::findByImageHash(const QString& hash, HistoryItem* outItem) {
+    QSqlQuery q(m_db);
+    q.prepare("SELECT * FROM items WHERE type='image' AND hash=? ORDER BY created_at DESC LIMIT 1");
+    q.addBindValue(hash);
+    if (q.exec() && q.next()) {
+        if (outItem) *outItem = fromQuery(q);
+        return true;
+    }
+    return false;
 }

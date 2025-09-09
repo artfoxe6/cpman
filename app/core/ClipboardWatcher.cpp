@@ -81,7 +81,16 @@ void ClipboardWatcher::onClipboardChanged() {
         const QString text = md->text();
         if (text.toUtf8().size() > 100*1024) return; // limit 100KB
         if (text.isEmpty()) return;
-        if (!m_settings->allowRepeat() && text == m_lastText) return;
+        // Full DB dedupe: if exists, retime instead of inserting
+        HistoryItem existing;
+        if (m_db->findByExactText(text, &existing)) {
+            const qint64 now = item.createdAt;
+            m_db->retimeItem(existing.id, now);
+            if (m_mem->containsId(existing.id)) m_mem->retimeMoveToFront(existing.id, now);
+            else { existing.createdAt = now; m_mem->addItem(existing); }
+            m_lastText = text;
+            return;
+        }
         m_lastText = text;
         item.type = ItemType::Text;
         item.text = text;
@@ -90,7 +99,16 @@ void ClipboardWatcher::onClipboardChanged() {
         const QImage img = qvariant_cast<QImage>(md->imageData());
         if (img.isNull()) return;
         const QString hash = imageHash(img);
-        if (!m_settings->allowRepeat() && hash == m_lastHash) return;
+        // Full DB dedupe: if exists by hash, retime
+        HistoryItem existing;
+        if (m_db->findByImageHash(hash, &existing)) {
+            const qint64 now = item.createdAt;
+            m_db->retimeItem(existing.id, now);
+            if (m_mem->containsId(existing.id)) m_mem->retimeMoveToFront(existing.id, now);
+            else { existing.createdAt = now; m_mem->addItem(existing); }
+            m_lastHash = hash;
+            return;
+        }
         QString thumb;
         int w=0,h=0;
         const QString path = m_img->saveImage(img, &thumb, &w, &h);

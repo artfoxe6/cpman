@@ -22,6 +22,7 @@ public:
     void setFavoriteById(qint64 id, bool on);
     void incrementUsageById(qint64 id);
     void retimeMoveToFront(qint64 id, qint64 createdAtMs);
+    bool containsId(qint64 id) const;
 
 signals:
     void itemsChanged();

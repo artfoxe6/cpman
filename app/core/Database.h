@@ -24,6 +24,10 @@ public:
     bool hasFts() const { return m_hasFts; }
     bool deleteOlderThan(qint64 cutoffMs, QStringList* outMediaPaths = nullptr);
 
+    // Full-database deduplication helpers
+    bool findByExactText(const QString& text, HistoryItem* outItem);
+    bool findByImageHash(const QString& hash, HistoryItem* outItem);
+
 signals:
     void error(const QString& message);
 

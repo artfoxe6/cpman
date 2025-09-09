@@ -66,3 +66,10 @@ void InMemoryStore::retimeMoveToFront(qint64 id, qint64 createdAtMs) {
     if (m_items.size() > m_capacity) m_items.resize(m_capacity);
     emit itemsChanged();
 }
+
+bool InMemoryStore::containsId(qint64 id) const {
+    for (const auto& it : m_items) {
+        if (it.id == id) return true;
+    }
+    return false;
+}
