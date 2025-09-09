@@ -113,13 +113,21 @@ void PreviewPane::updateHeart() {
 
 void PreviewPane::updateImageDisplay() {
     if (m_imageOrig.isNull()) return;
+    // Try to locate the parent scroll area to manage scrollbars
+    QScrollArea* sa = nullptr;
+    {
+        QWidget* p = this->parentWidget();
+        while (p && !qobject_cast<QScrollArea*>(p)) p = p->parentWidget();
+        sa = qobject_cast<QScrollArea*>(p);
+    }
+    // In fit-to-width mode, disable horizontal scrollbar; in 100% mode, allow as needed
+    if (sa) sa->setHorizontalScrollBarPolicy(m_fitToWidth ? Qt::ScrollBarAlwaysOff : Qt::ScrollBarAsNeeded);
     if (m_fitToWidth) {
         // Prefer the scroll area's viewport width to avoid feedback resizing
         int vpw = this->width();
-        QWidget* p = this->parentWidget();
-        while (p && !qobject_cast<QScrollArea*>(p)) p = p->parentWidget();
-        if (auto* sa = qobject_cast<QScrollArea*>(p)) vpw = sa->viewport()->width();
-        int w = vpw - 8; // padding
+        if (sa) vpw = sa->viewport()->width();
+        // Account for left/right layout margins (8 + 8)
+        int w = vpw - 16;
         if (w < 1) w = 1;
         {
             QPixmap cur = m_imageLabel->pixmap();
