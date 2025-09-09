@@ -5,6 +5,7 @@
 #include <QSqlError>
 #include <QSqlRecord>
 #include <QDateTime>
+#include <QSet>
 
 Database::Database(QObject* parent)
     : QObject(parent) {}
@@ -48,6 +49,19 @@ bool Database::migrate() {
     }
     q.exec("CREATE INDEX IF NOT EXISTS idx_items_created_at ON items(created_at DESC)");
     q.exec("CREATE INDEX IF NOT EXISTS idx_items_fav ON items(is_favorite)");
+
+    // Ensure new columns exist (schema migrations)
+    // Check existing columns
+    QSet<QString> cols;
+    if (q.exec("PRAGMA table_info(items)")) {
+        while (q.next()) cols.insert(q.value(1).toString());
+    }
+    if (!cols.contains("usage_count")) {
+        QSqlQuery qa(m_db);
+        if (!qa.exec("ALTER TABLE items ADD COLUMN usage_count INTEGER DEFAULT 0")) {
+            // ignore; on older SQLite without ALTER TABLE capabilities or if failed, read as 0 elsewhere
+        }
+    }
 
     ensureFts();
     return true;
@@ -109,6 +123,7 @@ HistoryItem Database::fromQuery(const QSqlQuery& q) {
     it.height = q.value("height").toInt();
     it.hash = q.value("hash").toString();
     it.favorite = q.value("is_favorite").toInt() != 0;
+    it.usageCount = q.record().indexOf("usage_count") >= 0 ? q.value("usage_count").toInt() : 0;
     it.createdAt = q.value("created_at").toLongLong();
     it.appName = q.value("app_name").toString();
     it.appPid = q.value("app_pid").toInt();
@@ -175,6 +190,13 @@ bool Database::toggleFavorite(qint64 id, bool on) {
     QSqlQuery q(m_db);
     q.prepare("UPDATE items SET is_favorite=? WHERE id=?");
     q.addBindValue(on ? 1 : 0);
+    q.addBindValue(id);
+    return q.exec();
+}
+
+bool Database::incrementUsage(qint64 id) {
+    QSqlQuery q(m_db);
+    q.prepare("UPDATE items SET usage_count = COALESCE(usage_count,0) + 1 WHERE id=?");
     q.addBindValue(id);
     return q.exec();
 }

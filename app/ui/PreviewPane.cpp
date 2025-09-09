@@ -20,6 +20,10 @@ PreviewPane::PreviewPane(QWidget* parent) : QWidget(parent) {
     m_scaleLabel->setStyleSheet("color: palette(mid); font-size: 11px;");
     top->addWidget(m_scaleLabel);
     top->addStretch();
+    m_usageLabel = new QLabel();
+    m_usageLabel->setStyleSheet("color: palette(mid); font-size: 11px;");
+    m_usageLabel->setText(QStringLiteral("使用次数：0"));
+    top->addWidget(m_usageLabel);
     v->addLayout(top);
 
     m_textLabel = new QLabel();
@@ -34,7 +38,7 @@ PreviewPane::PreviewPane(QWidget* parent) : QWidget(parent) {
     m_imageLabel->setAlignment(Qt::AlignTop | Qt::AlignLeft);
     v->addWidget(m_imageLabel, 1);
 
-    // Floating heart button (overlay, fixed at top-right)
+    // Heart button placed in top layout (right side)
     m_heart = new QPushButton(this);
     m_heart->setObjectName("previewHeart");
     m_heart->setFlat(true);
@@ -45,7 +49,8 @@ PreviewPane::PreviewPane(QWidget* parent) : QWidget(parent) {
     m_heart->setIconSize(QSize(20, 20));
     m_heart->setFixedSize(QSize(28, 28));
     m_heart->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    m_heart->raise();
+    // add to layout
+    top->addWidget(m_heart);
     connect(m_heart, &QPushButton::clicked, this, &PreviewPane::onHeart);
     // react to theme changes
 #if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
@@ -53,23 +58,25 @@ PreviewPane::PreviewPane(QWidget* parent) : QWidget(parent) {
 #endif
 }
 
-void PreviewPane::showText(qint64 id, const QString& text, bool favorite) {
-    m_id = id; m_favorite = favorite; m_isImage = false;
+void PreviewPane::showText(qint64 id, const QString& text, bool favorite, int usageCount) {
+    m_id = id; m_favorite = favorite; m_isImage = false; m_usageCount = usageCount;
     m_textLabel->setText(text);
     m_textLabel->setVisible(true);
     m_imageLabel->setVisible(false);
     updateHeart();
     updateScaleLabel();
+    updateUsageLabel();
 }
 
-void PreviewPane::showImage(qint64 id, const QImage& img, bool favorite) {
-    m_id = id; m_favorite = favorite; m_isImage = true; m_fitToWidth = true;
+void PreviewPane::showImage(qint64 id, const QImage& img, bool favorite, int usageCount) {
+    m_id = id; m_favorite = favorite; m_isImage = true; m_fitToWidth = true; m_usageCount = usageCount;
     m_imageOrig = QPixmap::fromImage(img);
     m_imageLabel->setVisible(true);
     m_textLabel->setVisible(false);
     updateImageDisplay();
     updateScaleLabel();
     updateHeart();
+    updateUsageLabel();
 }
 
 bool PreviewPane::eventFilter(QObject* obj, QEvent* ev) {
@@ -85,12 +92,6 @@ bool PreviewPane::eventFilter(QObject* obj, QEvent* ev) {
 void PreviewPane::resizeEvent(QResizeEvent* e) {
     QWidget::resizeEvent(e);
     if (m_isImage) { updateImageDisplay(); updateScaleLabel(); }
-    // place heart at top-right with small margin when owned by this widget
-    if (m_heart && m_heart->parent() == this) {
-        const int margin = 4;
-        QSize sz = m_heart->size();
-        m_heart->move(width() - sz.width() - margin, margin);
-    }
 }
 
 void PreviewPane::onHeart() {
@@ -152,6 +153,11 @@ void PreviewPane::updateScaleLabel() {
     } else {
         m_scaleLabel->setText(QStringLiteral("100%"));
     }
+}
+
+void PreviewPane::updateUsageLabel() {
+    if (!m_usageLabel) return;
+    m_usageLabel->setText(QStringLiteral("使用次数：%1").arg(m_usageCount));
 }
 
 void PreviewPane::attachSettings(Settings* settings) {

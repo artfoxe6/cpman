@@ -45,3 +45,10 @@ void InMemoryStore::setFavoriteById(qint64 id, bool on) {
     }
     emit itemsChanged();
 }
+
+void InMemoryStore::incrementUsageById(qint64 id) {
+    for (auto& it : m_items) {
+        if (it.id == id) { it.usageCount += 1; break; }
+    }
+    emit itemsChanged();
+}

@@ -19,10 +19,10 @@ struct HistoryItem {
     int height = 0;
     QString hash;             // sha256
     bool favorite = false;
+    int usageCount = 0;       // times used (committed)
     qint64 createdAt = 0;     // epoch ms
     QString appName;          // optional
     int appPid = 0;           // optional
 };
 
 Q_DECLARE_METATYPE(HistoryItem)
-

@@ -35,6 +35,7 @@ QVariant HistoryListModel::data(const QModelIndex& index, int role) const {
         case MediaPathRole: return it.mediaPath;
         case FavoriteRole: return it.favorite;
         case CreatedAtRole: return it.createdAt;
+        case UsageCountRole: return it.usageCount;
         default: return {};
     }
 }
@@ -46,7 +47,8 @@ QHash<int, QByteArray> HistoryListModel::roleNames() const {
         {TextRole, "text"},
         {MediaPathRole, "mediaPath"},
         {FavoriteRole, "favorite"},
-        {CreatedAtRole, "createdAt"}
+        {CreatedAtRole, "createdAt"},
+        {UsageCountRole, "usageCount"}
     };
 }
 

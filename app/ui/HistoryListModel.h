@@ -7,7 +7,7 @@
 class HistoryListModel : public QAbstractListModel {
     Q_OBJECT
 public:
-    enum Roles { IdRole = Qt::UserRole + 1, TypeRole, TextRole, MediaPathRole, FavoriteRole, CreatedAtRole };
+    enum Roles { IdRole = Qt::UserRole + 1, TypeRole, TextRole, MediaPathRole, FavoriteRole, CreatedAtRole, UsageCountRole };
 
     explicit HistoryListModel(QObject* parent = nullptr);
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;

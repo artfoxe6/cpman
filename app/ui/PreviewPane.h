@@ -14,8 +14,8 @@ public:
     explicit PreviewPane(QWidget* parent = nullptr);
     void attachSettings(Settings* settings);
 
-    void showText(qint64 id, const QString& text, bool favorite);
-    void showImage(qint64 id, const QImage& img, bool favorite);
+    void showText(qint64 id, const QString& text, bool favorite, int usageCount);
+    void showImage(qint64 id, const QImage& img, bool favorite, int usageCount);
 
     void triggerToggleFavorite();
 
@@ -33,6 +33,7 @@ private:
     void updateHeart();
     void updateImageDisplay();
     void updateScaleLabel();
+    void updateUsageLabel();
 
     qint64 m_id = 0;
     bool m_favorite = false;
@@ -42,6 +43,8 @@ private:
     QLabel* m_imageLabel = nullptr;
     QPushButton* m_heart = nullptr;
     QLabel* m_scaleLabel = nullptr;
+    QLabel* m_usageLabel = nullptr;
     QPixmap m_imageOrig;
     Settings* m_settings = nullptr;
+    int m_usageCount = 0;
 };

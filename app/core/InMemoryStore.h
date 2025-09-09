@@ -20,6 +20,7 @@ public:
     QVector<HistoryItem> filterMemory(const QStringList& tokens, bool onlyFav) const;
 
     void setFavoriteById(qint64 id, bool on);
+    void incrementUsageById(qint64 id);
 
 signals:
     void itemsChanged();

@@ -122,21 +122,7 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     m_preview = new PreviewPane();
     m_previewScroll->setWidget(m_preview);
     m_previewScroll->setWidgetResizable(true);
-    // Reparent preview's heart button to viewport so it floats fixed at top-right
-    if (auto* heart = m_preview->findChild<QPushButton*>("previewHeart")) {
-        auto* vp = m_previewScroll->viewport();
-        heart->setParent(vp);
-        heart->show();
-        auto placeHeart = [heart, vp]{
-            const int margin = 4;
-            QSize sz = heart->size();
-            heart->move(vp->width() - sz.width() - margin, margin);
-            heart->raise();
-        };
-        placeHeart();
-        // Adjust on viewport resize
-        m_previewScroll->viewport()->installEventFilter(this);
-    }
+    // Heart button is placed within PreviewPane's top bar layout; no floating reparenting needed.
     bottom->addWidget(m_list, 1);
     bottom->addWidget(m_previewScroll, 1);
     v->addLayout(bottom, 1);
@@ -234,16 +220,7 @@ bool MainPopup::eventFilter(QObject* obj, QEvent* ev) {
                 break;
         }
     }
-    // Reposition floating heart when preview viewport resizes
-    if (m_previewScroll && obj == m_previewScroll->viewport() && ev->type() == QEvent::Resize) {
-        if (auto* heart = m_previewScroll->viewport()->findChild<QPushButton*>("previewHeart")) {
-            const int margin = 4;
-            QWidget* vp = m_previewScroll->viewport();
-            QSize sz = heart->size();
-            heart->move(vp->width() - sz.width() - margin, margin);
-            heart->raise();
-        }
-    }
+    // no floating heart; no viewport reposition needed
     return QWidget::eventFilter(obj, ev);
 }
 
@@ -273,13 +250,14 @@ void MainPopup::updatePreviewFromIndex(const QModelIndex& idx) {
     const auto type = idx.data(Qt::UserRole + 2).toString(); // TypeRole string
     const qint64 id = idx.data(Qt::UserRole + 1).toLongLong(); // IdRole
     const bool fav = idx.data(Qt::UserRole + 5).toBool(); // FavoriteRole
+    const int usage = idx.data(Qt::UserRole + 7).toInt(); // UsageCountRole
     if (type == "text") {
         const QString text = idx.data(Qt::UserRole + 3).toString(); // TextRole
-        m_preview->showText(id, text, fav);
+        m_preview->showText(id, text, fav, usage);
     } else {
         const QString path = idx.data(Qt::UserRole + 4).toString(); // MediaPathRole
         QImage img(path);
-        if (!img.isNull()) m_preview->showImage(id, img, fav);
+        if (!img.isNull()) m_preview->showImage(id, img, fav, usage);
     }
 }
 

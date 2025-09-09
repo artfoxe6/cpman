@@ -123,7 +123,9 @@ int main(int argc, char* argv[]) {
         // Try to restore focus to the previously active app before autopaste
         focus.restoreForeground();
         if (settings.autoPaste()) autoPaster.schedulePaste(settings.pasteDelayMs());
-        (void)id; // reserved for future favorite toggle or analytics
+        // increment usage count
+        db.incrementUsage(id);
+        mem.incrementUsageById(id);
     });
 
     // When popup hides without commit (Esc/click outside), also restore focus.
