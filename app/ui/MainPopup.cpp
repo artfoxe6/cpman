@@ -246,11 +246,30 @@ void MainPopup::setListModel(QAbstractItemModel* model) {
     // Keep preview empty and no selection after searches/model resets
     if (model) {
         connect(model, &QAbstractItemModel::modelReset, this, [this]{
-            if (m_list) {
+            // Try to restore selection to previously selected item by id.
+            // If not found (e.g., filtered out), clear selection and preview.
+            if (!m_list) return;
+            int rows = m_list->model() ? m_list->model()->rowCount() : 0;
+            QModelIndex restoreIdx;
+            if (m_currentItemId > 0 && rows > 0) {
+                for (int r = 0; r < rows; ++r) {
+                    const QModelIndex idx = m_list->model()->index(r, 0);
+                    const qint64 id = idx.data(Qt::UserRole + 1).toLongLong(); // IdRole
+                    if (id == m_currentItemId) { restoreIdx = idx; break; }
+                }
+            }
+            if (restoreIdx.isValid()) {
+                m_list->setCurrentIndex(restoreIdx);
+                // Explicitly refresh preview with restored index
+                updatePreviewFromIndex(restoreIdx);
+            } else {
                 m_list->clearSelection();
                 m_list->setCurrentIndex(QModelIndex());
+                if (m_preview) {
+                    m_preview->clear();
+                }
+                m_currentItemId = 0;
             }
-            if (m_preview) m_preview->clear();
         });
     }
 }
@@ -267,6 +286,7 @@ void MainPopup::updatePreviewFromIndex(const QModelIndex& idx) {
     if (!idx.isValid()) return;
     const auto type = idx.data(Qt::UserRole + 2).toString(); // TypeRole string
     const qint64 id = idx.data(Qt::UserRole + 1).toLongLong(); // IdRole
+    m_currentItemId = id;
     const bool fav = idx.data(Qt::UserRole + 5).toBool(); // FavoriteRole
     const int usage = idx.data(Qt::UserRole + 7).toInt(); // UsageCountRole
     if (type == "text") {

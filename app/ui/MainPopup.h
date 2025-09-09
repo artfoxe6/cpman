@@ -58,4 +58,6 @@ private:
     QPoint m_dragOffset;
     bool m_sizedOnce = false;
     Settings* m_settings = nullptr;
+    // Track current item id to restore selection across model resets
+    qint64 m_currentItemId = 0;
 };
