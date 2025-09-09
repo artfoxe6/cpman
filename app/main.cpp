@@ -71,7 +71,23 @@ int main(int argc, char* argv[]) {
     // We can set it by finding the QListView child.
     auto listViews = popup.findChildren<QListView*>();
     if (!listViews.isEmpty()) listViews.first()->setItemDelegate(delegate);
-    QObject::connect(&mem, &InMemoryStore::itemsChanged, [&]{ model.setItems(mem.items()); });
+    // When memory store changes (new capture, retime, favorite/usage),
+    // refresh the view respecting current search mode and filters.
+    QObject::connect(&mem, &InMemoryStore::itemsChanged, [&]{
+        const int limit = mem.capacity();
+        const QString query = popup.queryText();
+        QStringList tokens;
+        for (const auto& t : query.split(' ', Qt::SkipEmptyParts)) tokens << t.trimmed();
+        const bool useDb = popup.useDbChecked();
+        const bool onlyFav = popup.onlyFavChecked();
+        if (!useDb && tokens.isEmpty() && !onlyFav) {
+            model.setItems(mem.items());
+        } else if (useDb) {
+            model.setItems(db.searchFts(tokens, onlyFav, limit));
+        } else {
+            model.setItems(mem.filterMemory(tokens, onlyFav));
+        }
+    });
 
     QObject::connect(&tray, &TrayIcon::togglePopupRequested, [&]{
         if (popup.isVisible()) popup.hidePopup();
