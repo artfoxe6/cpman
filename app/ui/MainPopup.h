@@ -9,6 +9,7 @@ class QListView;
 class QScrollArea;
 class QAbstractItemModel;
 class PreviewPane;
+class Settings;
 
 class MainPopup : public QWidget {
     Q_OBJECT
@@ -27,6 +28,10 @@ public:
     bool onlyFavChecked() const;
 
     PreviewPane* previewPane() const { return m_preview; }
+
+    // Apply a default size from settings or UI change.
+    // If visible, resizes immediately; otherwise, re-applies on next show.
+    void applyDefaultSize(const QSize& sz);
 
 signals:
     void requestSearch(QString query, bool useDb, bool onlyFav);
@@ -52,4 +57,5 @@ private:
     bool m_dragging = false;
     QPoint m_dragOffset;
     bool m_sizedOnce = false;
+    Settings* m_settings = nullptr;
 };

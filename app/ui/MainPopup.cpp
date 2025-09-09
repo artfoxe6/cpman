@@ -15,6 +15,7 @@
 #include "Theme.h"
 #include <QMouseEvent>
 #include "PreviewPane.h"
+#include "../core/Settings.h"
 #include <QGraphicsDropShadowEffect>
 #include <QFrame>
 #include <QAction>
@@ -30,7 +31,7 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     outer->setContentsMargins(12, 12, 12, 12);
     m_container = new QWidget(this);
     // Rounded background that follows palette, no border
-    m_container->setStyleSheet("background: palette(window); border-radius: 8px;");
+    m_container->setStyleSheet("background: palette(window); border-radius: 5px;");
     auto* v = new QVBoxLayout(m_container);
     v->setContentsMargins(10, 10, 10, 10);
     outer->addWidget(m_container);
@@ -149,9 +150,18 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
 
 void MainPopup::showPopup() {
     if (!m_sizedOnce) {
-        // Enlarge initial size to 1.5x of natural size
-        const QSize sh = sizeHint().isValid() ? sizeHint() : QSize(800, 500);
-        resize(int(sh.width() * 1.5), int(sh.height() * 1.5));
+        // Prefer user-defined default size from settings
+        if (m_settings) {
+            const QSize s = m_settings->popupSize();
+            if (s.isValid()) {
+                resize(s);
+            } else {
+                // Fallback: enlarge initial size to 1.5x of natural size
+                resize(QSize(600, 550));
+            }
+        } else {
+            resize(QSize(600, 550));
+        }
         m_sizedOnce = true;
     }
     show();
@@ -273,7 +283,18 @@ bool MainPopup::useDbChecked() const { return m_useDb->isChecked(); }
 bool MainPopup::onlyFavChecked() const { return m_onlyFav->isChecked(); }
 
 void MainPopup::attachSettings(Settings* settings) {
+    m_settings = settings;
     if (m_preview) m_preview->attachSettings(settings);
+}
+
+void MainPopup::applyDefaultSize(const QSize& sz) {
+    if (!sz.isValid()) return;
+    if (isVisible()) {
+        resize(sz);
+    } else {
+        // Re-apply size on next show
+        m_sizedOnce = false;
+    }
 }
 
 void MainPopup::mousePressEvent(QMouseEvent* e) {

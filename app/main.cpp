@@ -159,6 +159,16 @@ int main(int argc, char* argv[]) {
             model.setItems(mem.items());
         }
     });
+    QObject::connect(&settingsDlg, &SettingsDialog::windowSizeChanged, [&](QSize sz){
+        settings.setPopupSize(sz);
+        popup.applyDefaultSize(sz);
+    });
+    QObject::connect(&settingsDlg, &SettingsDialog::useCurrentWindowSizeRequested, [&]{
+        const QSize sz = popup.size();
+        settings.setPopupSize(sz);
+        popup.applyDefaultSize(sz);
+        settingsDlg.setWindowSizeDisplay(sz);
+    });
 
     return app.exec();
 }

@@ -8,6 +8,7 @@ static constexpr const char* KEY_ALLOW_REPEAT = "capture/allowRepeat";
 static constexpr const char* KEY_PAUSED = "capture/paused";
 static constexpr const char* KEY_BLACKLIST = "privacy/blacklist";
 static constexpr const char* KEY_THEME = "theme/mode";
+static constexpr const char* KEY_POPUP_SIZE = "window/popupSize";
 
 Settings::Settings(QObject* parent)
     : QObject(parent)
@@ -98,5 +99,24 @@ QString Settings::themeMode() const {
 
 void Settings::setThemeMode(const QString& mode) {
     m_settings.setValue(KEY_THEME, mode);
+    emit changed();
+}
+
+QSize Settings::popupSize() const {
+    // Returns invalid size if never set
+    QVariant v = m_settings.value(KEY_POPUP_SIZE);
+    if (!v.isValid()) return QSize();
+    QSize sz = v.toSize();
+    // Clamp to a sane minimum to avoid 0-sized window
+    const int minW = 400, minH = 300;
+    if (sz.width() < minW || sz.height() < minH) return QSize();
+    return sz;
+}
+
+void Settings::setPopupSize(const QSize& sz) {
+    // Store only if reasonable
+    const int minW = 400, minH = 300;
+    if (sz.width() < minW || sz.height() < minH) return;
+    m_settings.setValue(KEY_POPUP_SIZE, sz);
     emit changed();
 }

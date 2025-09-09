@@ -15,6 +15,7 @@
 #include <QDirIterator>
 #include <QStandardPaths>
 #include <QComboBox>
+#include <QSize>
 
 SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
     : QDialog(parent), m_settings(settings) {
@@ -68,6 +69,25 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
     if (themeIndex >= 0) cbTheme->setCurrentIndex(themeIndex);
     themeRow->addWidget(cbTheme);
     v->addLayout(themeRow);
+
+    // Default popup size
+    auto* sizeRow = new QHBoxLayout();
+    sizeRow->addWidget(new QLabel(QStringLiteral("默认窗口大小 (宽×高):")));
+    m_spW = new QSpinBox();
+    m_spH = new QSpinBox();
+    m_spW->setRange(400, 3840);
+    m_spH->setRange(300, 2160);
+    const QSize storedSize = m_settings->popupSize();
+    const QSize initialSize = storedSize.isValid() ? storedSize : QSize(960, 600);
+    m_spW->setValue(initialSize.width());
+    m_spH->setValue(initialSize.height());
+    sizeRow->addWidget(m_spW);
+    sizeRow->addWidget(new QLabel(QStringLiteral("×")));
+    sizeRow->addWidget(m_spH);
+    auto* btnUseCurrent = new QPushButton(QStringLiteral("使用当前窗口大小为默认值"));
+    sizeRow->addSpacing(8);
+    sizeRow->addWidget(btnUseCurrent);
+    v->addLayout(sizeRow);
 
     // Storage stats
     auto* lblDb = new QLabel();
@@ -124,6 +144,19 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
     connect(cbTheme, qOverload<int>(&QComboBox::currentIndexChanged), this, [this, cbTheme](int){
         m_settings->setThemeMode(cbTheme->currentData().toString());
     });
+    connect(m_spW, qOverload<int>(&QSpinBox::valueChanged), this, [this](int){ emit windowSizeChanged(QSize(m_spW->value(), m_spH->value())); });
+    connect(m_spH, qOverload<int>(&QSpinBox::valueChanged), this, [this](int){ emit windowSizeChanged(QSize(m_spW->value(), m_spH->value())); });
+    connect(btnUseCurrent, &QPushButton::clicked, this, [this]{ emit useCurrentWindowSizeRequested(); });
 
     // no extra persistence on accept
+}
+
+void SettingsDialog::setWindowSizeDisplay(const QSize& sz) {
+    if (!m_spW || !m_spH) return;
+    if (!sz.isValid()) return;
+    // Block signals to avoid re-emitting windowSizeChanged while reflecting programmatic update
+    const QSignalBlocker b1(m_spW);
+    const QSignalBlocker b2(m_spH);
+    m_spW->setValue(sz.width());
+    m_spH->setValue(sz.height());
 }

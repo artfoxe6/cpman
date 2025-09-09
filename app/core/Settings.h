@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QSettings>
 #include <QKeySequence>
+#include <QSize>
 
 class Settings : public QObject {
     Q_OBJECT
@@ -32,6 +33,10 @@ public:
 
     QString themeMode() const; // system|light|dark
     void setThemeMode(const QString& mode);
+
+    // Popup default size (when first shown)
+    QSize popupSize() const;
+    void setPopupSize(const QSize& sz);
 
 signals:
     void changed();
