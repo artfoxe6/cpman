@@ -201,6 +201,14 @@ bool Database::incrementUsage(qint64 id) {
     return q.exec();
 }
 
+bool Database::retimeItem(qint64 id, qint64 createdAtMs) {
+    QSqlQuery q(m_db);
+    q.prepare("UPDATE items SET created_at=? WHERE id=?");
+    q.addBindValue(createdAtMs);
+    q.addBindValue(id);
+    return q.exec();
+}
+
 bool Database::vacuum() {
     QSqlQuery q(m_db);
     return q.exec("VACUUM");

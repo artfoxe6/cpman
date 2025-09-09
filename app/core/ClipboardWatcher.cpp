@@ -16,6 +16,20 @@ ClipboardWatcher::ClipboardWatcher(Database* db, InMemoryStore* mem, ImageStore*
     m_clipboard = QGuiApplication::clipboard();
 }
 
+void ClipboardWatcher::suppressNextWithText(qint64 id, const QString& text) {
+    m_suppressPending = true;
+    m_suppressId = id;
+    m_suppressText = text;
+    m_suppressHash.clear();
+}
+
+void ClipboardWatcher::suppressNextWithImage(qint64 id, const QString& hash) {
+    m_suppressPending = true;
+    m_suppressId = id;
+    m_suppressHash = hash;
+    m_suppressText.clear();
+}
+
 void ClipboardWatcher::start() {
     // Some platforms emit either dataChanged() or changed(mode). Listen to both
     connect(m_clipboard, &QClipboard::dataChanged, this, &ClipboardWatcher::onClipboardChanged);
@@ -40,6 +54,15 @@ static QString imageHash(const QImage& img) {
 
 void ClipboardWatcher::onClipboardChanged() {
     if (m_paused) return;
+    if (m_suppressPending) {
+        const qint64 now = QDateTime::currentMSecsSinceEpoch();
+        m_db->retimeItem(m_suppressId, now);
+        m_mem->retimeMoveToFront(m_suppressId, now);
+        if (!m_suppressText.isEmpty()) m_lastText = m_suppressText;
+        if (!m_suppressHash.isEmpty()) m_lastHash = m_suppressHash;
+        m_suppressPending = false;
+        return;
+    }
     const QMimeData* md = m_clipboard->mimeData();
     if (!md) return;
 

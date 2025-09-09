@@ -19,6 +19,7 @@ public:
     QVector<HistoryItem> searchFts(const QStringList& tokens, bool onlyFav, int limit);
     bool toggleFavorite(qint64 id, bool on);
     bool incrementUsage(qint64 id);
+    bool retimeItem(qint64 id, qint64 createdAtMs);
     bool vacuum();
     bool hasFts() const { return m_hasFts; }
     bool deleteOlderThan(qint64 cutoffMs, QStringList* outMediaPaths = nullptr);

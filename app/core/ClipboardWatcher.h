@@ -17,6 +17,10 @@ public:
     ClipboardWatcher(Database* db, InMemoryStore* mem, ImageStore* img, Settings* settings, QObject* parent = nullptr);
     void start();
     void setPaused(bool on);
+    // Suppress creating a new record for the next clipboard change
+    // and instead retime the given item to now.
+    void suppressNextWithText(qint64 id, const QString& text);
+    void suppressNextWithImage(qint64 id, const QString& hash);
 
 signals:
     void itemCaptured(const HistoryItem&);
@@ -34,5 +38,10 @@ private:
     bool m_paused = false;
     QString m_lastText;
     QString m_lastHash;
+    // Internal suppression state when committing a selection
+    bool m_suppressPending = false;
+    qint64 m_suppressId = 0;
+    QString m_suppressText;
+    QString m_suppressHash;
     bool isBlacklisted(const QString& appName) const;
 };

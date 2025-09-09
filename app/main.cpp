@@ -113,9 +113,13 @@ int main(int argc, char* argv[]) {
         const QString type = model.data(idx, HistoryListModel::TypeRole).toString();
         if (type == "text") {
             const QString text = model.data(idx, HistoryListModel::TextRole).toString();
+            // Suppress capture and retime the selected record instead of creating a new one
+            watcher.suppressNextWithText(id, text);
             QGuiApplication::clipboard()->setText(text);
         } else {
             const QString path = model.data(idx, HistoryListModel::MediaPathRole).toString();
+            const QString hash = model.data(idx, HistoryListModel::HashRole).toString();
+            watcher.suppressNextWithImage(id, hash);
             QImage img(path);
             if (!img.isNull()) QGuiApplication::clipboard()->setImage(img);
         }

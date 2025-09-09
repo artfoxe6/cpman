@@ -52,3 +52,17 @@ void InMemoryStore::incrementUsageById(qint64 id) {
     }
     emit itemsChanged();
 }
+
+void InMemoryStore::retimeMoveToFront(qint64 id, qint64 createdAtMs) {
+    int idx = -1;
+    for (int i = 0; i < m_items.size(); ++i) {
+        if (m_items[i].id == id) { idx = i; break; }
+    }
+    if (idx < 0) return;
+    HistoryItem it = m_items[idx];
+    it.createdAt = createdAtMs;
+    m_items.removeAt(idx);
+    m_items.prepend(it);
+    if (m_items.size() > m_capacity) m_items.resize(m_capacity);
+    emit itemsChanged();
+}
