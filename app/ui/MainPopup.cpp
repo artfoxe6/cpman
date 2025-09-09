@@ -17,6 +17,7 @@
 #include "PreviewPane.h"
 #include <QGraphicsDropShadowEffect>
 #include <QFrame>
+#include <QAction>
 
 MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
@@ -42,6 +43,8 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     m_container->setGraphicsEffect(shadow);
 
     auto* top = new QHBoxLayout();
+    top->setContentsMargins(6, 2, 6, 6);
+    top->setSpacing(8);
     m_search = new QLineEdit();
     m_search->setPlaceholderText(QStringLiteral("搜索…"));
     m_useDb = new QCheckBox(QStringLiteral("数据库"));
@@ -51,7 +54,10 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
         m_search->setClearButtonEnabled(true);
         // Remove borders on search field
         m_search->setFrame(false);
-        m_search->setStyleSheet("QLineEdit{border:none;padding:6px 8px;background:palette(base);} QLineEdit:focus{outline:none;}");
+        m_search->setStyleSheet(
+            "QLineEdit{border:none;padding:8px 10px;background:palette(base);border-radius:6px;}"
+            "QLineEdit:focus{outline:none;}"
+        );
         // Remove frames from list and preview scroll area (set after created)
         if (m_list) m_list->setFrameShape(QFrame::NoFrame);
         if (m_previewScroll) m_previewScroll->setFrameShape(QFrame::NoFrame);
@@ -66,10 +72,31 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
             " QScrollBar::add-page, QScrollBar::sub-page{background:transparent;}";
         this->setStyleSheet(ss);
     };
+    // Add leading search icon action
+    auto updateTopIcons = [this]{
+        const auto scheme = Theme::effectiveScheme(nullptr);
+        const QString searchIcon = Theme::icon("search", scheme);
+        if (!searchIcon.isEmpty()) {
+            // Ensure only one leading action
+            for (QAction* a : m_search->actions()) m_search->removeAction(a);
+            m_search->addAction(QIcon(searchIcon), QLineEdit::LeadingPosition);
+        }
+        const QString dbIcon = Theme::icon("db", scheme);
+        if (!dbIcon.isEmpty()) {
+            m_useDb->setIcon(QIcon(dbIcon));
+            m_useDb->setIconSize(QSize(16,16));
+        }
+        const QString favIcon = Theme::icon("heart_filled", scheme);
+        if (!favIcon.isEmpty()) {
+            m_onlyFav->setIcon(QIcon(favIcon));
+            m_onlyFav->setIconSize(QSize(16,16));
+        }
+    };
     applyUi();
+    updateTopIcons();
     // React to theme change (for potential palette changes in styles)
 #if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
-    QObject::connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, this, applyUi);
+    QObject::connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, this, [applyUi, updateTopIcons]{ applyUi(); updateTopIcons(); });
 #endif
     top->addWidget(m_search, 1);
     top->addWidget(m_useDb);
@@ -80,6 +107,8 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     m_list = new QListView();
     m_list->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     m_list->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_list->setMouseTracking(true);
+    m_list->setSpacing(2);
     // Remove list frame border
     m_list->setFrameShape(QFrame::NoFrame);
     m_previewScroll = new QScrollArea();

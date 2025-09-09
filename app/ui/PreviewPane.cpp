@@ -14,16 +14,17 @@
 
 PreviewPane::PreviewPane(QWidget* parent) : QWidget(parent) {
     auto* v = new QVBoxLayout(this);
-    v->setContentsMargins(4,4,4,4);
+    v->setContentsMargins(8,8,8,8);
     auto* top = new QHBoxLayout();
     m_scaleLabel = new QLabel();
-    m_scaleLabel->setStyleSheet("color: gray; font-size: 11px;");
+    m_scaleLabel->setStyleSheet("color: palette(mid); font-size: 11px;");
     top->addWidget(m_scaleLabel);
     top->addStretch();
     v->addLayout(top);
 
     m_textLabel = new QLabel();
     m_textLabel->setWordWrap(true);
+    m_textLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
     m_textLabel->setVisible(false);
     v->addWidget(m_textLabel, 1);
 
@@ -40,7 +41,7 @@ PreviewPane::PreviewPane(QWidget* parent) : QWidget(parent) {
     m_heart->setCursor(Qt::PointingHandCursor);
     m_heart->setToolTip(QStringLiteral("切换收藏 (Ctrl/⌘+D)"));
     // Keep square button to avoid icon squashing
-    m_heart->setStyleSheet("QPushButton{background:transparent;border:none;padding:4px;} ");
+    m_heart->setStyleSheet("QPushButton{background:transparent;border:none;padding:4px;} QPushButton:hover{background:rgba(127,127,127,0.12);border-radius:6px;}");
     m_heart->setIconSize(QSize(20, 20));
     m_heart->setFixedSize(QSize(28, 28));
     m_heart->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -113,11 +114,25 @@ void PreviewPane::updateHeart() {
 void PreviewPane::updateImageDisplay() {
     if (m_imageOrig.isNull()) return;
     if (m_fitToWidth) {
-        int w = this->width() - 8; // padding
+        // Prefer the scroll area's viewport width to avoid feedback resizing
+        int vpw = this->width();
+        QWidget* p = this->parentWidget();
+        while (p && !qobject_cast<QScrollArea*>(p)) p = p->parentWidget();
+        if (auto* sa = qobject_cast<QScrollArea*>(p)) vpw = sa->viewport()->width();
+        int w = vpw - 8; // padding
         if (w < 1) w = 1;
+        {
+            QPixmap cur = m_imageLabel->pixmap();
+            if (!cur.isNull() && qAbs(cur.width() - w) <= 1) return; // prevent thrashing growth
+        }
         QPixmap scaled = m_imageOrig.scaledToWidth(w, Qt::SmoothTransformation);
         m_imageLabel->setPixmap(scaled);
     } else {
+        // Only update if different to avoid resize loops
+        {
+            QPixmap cur = m_imageLabel->pixmap();
+            if (!cur.isNull() && cur.cacheKey() == m_imageOrig.cacheKey()) return;
+        }
         m_imageLabel->setPixmap(m_imageOrig);
     }
 }
