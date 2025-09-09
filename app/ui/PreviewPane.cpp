@@ -23,6 +23,7 @@ PreviewPane::PreviewPane(QWidget* parent) : QWidget(parent) {
     m_usageLabel = new QLabel();
     m_usageLabel->setStyleSheet("color: palette(mid); font-size: 11px;");
     m_usageLabel->setText(QStringLiteral("使用次数：0"));
+    m_usageLabel->setVisible(false);
     top->addWidget(m_usageLabel);
     v->addLayout(top);
 
@@ -63,8 +64,10 @@ void PreviewPane::showText(qint64 id, const QString& text, bool favorite, int us
     m_textLabel->setText(text);
     m_textLabel->setVisible(true);
     m_imageLabel->setVisible(false);
+    m_heart->setVisible(true);
     updateHeart();
     updateScaleLabel();
+    m_usageLabel->setVisible(true);
     updateUsageLabel();
 }
 
@@ -73,9 +76,11 @@ void PreviewPane::showImage(qint64 id, const QImage& img, bool favorite, int usa
     m_imageOrig = QPixmap::fromImage(img);
     m_imageLabel->setVisible(true);
     m_textLabel->setVisible(false);
+    m_heart->setVisible(true);
     updateImageDisplay();
     updateScaleLabel();
     updateHeart();
+    m_usageLabel->setVisible(true);
     updateUsageLabel();
 }
 
@@ -164,4 +169,18 @@ void PreviewPane::attachSettings(Settings* settings) {
     m_settings = settings;
     if (m_settings) QObject::connect(m_settings, &Settings::changed, this, [this]{ updateHeart(); updateImageDisplay(); });
     updateHeart();
+}
+
+void PreviewPane::clear() {
+    m_id = 0;
+    m_favorite = false;
+    m_isImage = false;
+    m_imageOrig = QPixmap();
+    m_textLabel->clear();
+    m_imageLabel->clear();
+    m_textLabel->setVisible(false);
+    m_imageLabel->setVisible(false);
+    m_heart->setVisible(false);
+    m_usageLabel->setVisible(false);
+    m_scaleLabel->clear();
 }

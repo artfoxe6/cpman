@@ -16,6 +16,7 @@ public:
 
     void showText(qint64 id, const QString& text, bool favorite, int usageCount);
     void showImage(qint64 id, const QImage& img, bool favorite, int usageCount);
+    void clear();
 
     void triggerToggleFavorite();
 

@@ -155,6 +155,14 @@ void MainPopup::showPopup() {
         }
         m_sizedOnce = true;
     }
+    // Clear current selection and preview on every open
+    if (m_list) {
+        m_list->clearSelection();
+        m_list->setCurrentIndex(QModelIndex());
+    }
+    if (m_preview) {
+        m_preview->clear();
+    }
     show();
     raise();
     activateWindow();
@@ -234,6 +242,16 @@ void MainPopup::setListModel(QAbstractItemModel* model) {
     if (m_list->selectionModel()) {
         connect(m_list->selectionModel(), &QItemSelectionModel::currentChanged,
                 this, [this](const QModelIndex& current, const QModelIndex&){ updatePreviewFromIndex(current); });
+    }
+    // Keep preview empty and no selection after searches/model resets
+    if (model) {
+        connect(model, &QAbstractItemModel::modelReset, this, [this]{
+            if (m_list) {
+                m_list->clearSelection();
+                m_list->setCurrentIndex(QModelIndex());
+            }
+            if (m_preview) m_preview->clear();
+        });
     }
 }
 
