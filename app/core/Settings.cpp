@@ -94,11 +94,12 @@ void Settings::setBlacklist(const QStringList& list) {
 }
 
 QString Settings::themeMode() const {
-    return m_settings.value(KEY_THEME, QStringLiteral("system")).toString();
+    // Theme switching disabled: always follow system
+    return QStringLiteral("system");
 }
 
-void Settings::setThemeMode(const QString& mode) {
-    m_settings.setValue(KEY_THEME, mode);
+void Settings::setThemeMode(const QString& /*mode*/) {
+    // No-op: follow system theme only
     emit changed();
 }
 

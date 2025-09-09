@@ -6,12 +6,8 @@
 
 namespace Theme {
 
-Qt::ColorScheme effectiveScheme(const Settings* settings) {
-    if (settings) {
-        const QString mode = settings->themeMode();
-        if (mode == QLatin1String("light")) return Qt::ColorScheme::Light;
-        if (mode == QLatin1String("dark")) return Qt::ColorScheme::Dark;
-    }
+Qt::ColorScheme effectiveScheme(const Settings* /*settings*/) {
+    // Always follow system color scheme
 #if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
     return QGuiApplication::styleHints()->colorScheme();
 #else

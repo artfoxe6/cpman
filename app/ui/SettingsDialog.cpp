@@ -14,7 +14,6 @@
 #include <QFileInfo>
 #include <QDirIterator>
 #include <QStandardPaths>
-#include <QComboBox>
 #include <QSize>
 
 SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
@@ -58,17 +57,7 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
     chkPause->setChecked(m_settings->paused());
     v->addWidget(chkPause);
 
-    // Theme mode
-    auto* themeRow = new QHBoxLayout();
-    themeRow->addWidget(new QLabel(QStringLiteral("主题:")));
-    auto* cbTheme = new QComboBox();
-    cbTheme->addItem(QStringLiteral("系统"), "system");
-    cbTheme->addItem(QStringLiteral("浅色"), "light");
-    cbTheme->addItem(QStringLiteral("深色"), "dark");
-    int themeIndex = cbTheme->findData(m_settings->themeMode());
-    if (themeIndex >= 0) cbTheme->setCurrentIndex(themeIndex);
-    themeRow->addWidget(cbTheme);
-    v->addLayout(themeRow);
+    // Theme mode selector removed: always follow system theme
 
     // Default popup size
     auto* sizeRow = new QHBoxLayout();
@@ -141,9 +130,7 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
     connect(chkPause, &QCheckBox::toggled, this, [this](bool on){ emit pausedChanged(on); });
     connect(btnClean, &QPushButton::clicked, this, [this, spDays]{ emit cleanupRequested(spDays->value()); });
     connect(btnRepo, &QPushButton::clicked, this, []{ QDesktopServices::openUrl(QUrl("https://github.com/xxxx/xxxx")); });
-    connect(cbTheme, qOverload<int>(&QComboBox::currentIndexChanged), this, [this, cbTheme](int){
-        m_settings->setThemeMode(cbTheme->currentData().toString());
-    });
+    // Theme switching disabled; always follow system, no signal needed
     connect(m_spW, qOverload<int>(&QSpinBox::valueChanged), this, [this](int){ emit windowSizeChanged(QSize(m_spW->value(), m_spH->value())); });
     connect(m_spH, qOverload<int>(&QSpinBox::valueChanged), this, [this](int){ emit windowSizeChanged(QSize(m_spW->value(), m_spH->value())); });
     connect(btnUseCurrent, &QPushButton::clicked, this, [this]{ emit useCurrentWindowSizeRequested(); });
