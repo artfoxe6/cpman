@@ -112,6 +112,11 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     m_list->setSpacing(2);
     // Remove list frame border
     m_list->setFrameShape(QFrame::NoFrame);
+    // Double-click on a history item commits just like pressing Enter
+    connect(m_list, &QListView::doubleClicked, this, [this](const QModelIndex& idx){
+        if (idx.isValid()) m_list->setCurrentIndex(idx);
+        emit commitRequested();
+    });
     m_previewScroll = new QScrollArea();
     m_previewScroll->setFrameShape(QFrame::NoFrame);
     m_preview = new PreviewPane();
