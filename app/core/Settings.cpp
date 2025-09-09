@@ -2,6 +2,7 @@
 
 static constexpr const char* KEY_HOTKEY = "hotkey/sequence";
 static constexpr const char* KEY_AUTOPASTE = "paste/auto";
+static constexpr const char* KEY_PASTE_DELAY = "paste/delayMs";
 static constexpr const char* KEY_PRELOAD = "preload/count";
 static constexpr const char* KEY_ALLOW_REPEAT = "capture/allowRepeat";
 static constexpr const char* KEY_PAUSED = "capture/paused";
@@ -37,6 +38,21 @@ bool Settings::autoPaste() const {
 
 void Settings::setAutoPaste(bool on) {
     m_settings.setValue(KEY_AUTOPASTE, on);
+    emit changed();
+}
+
+int Settings::pasteDelayMs() const {
+    int def = 1000;
+    int v = m_settings.value(KEY_PASTE_DELAY, def).toInt();
+    if (v < 0) v = 0;
+    if (v > 5000) v = 5000; // clamp to a sane range
+    return v;
+}
+
+void Settings::setPasteDelayMs(int ms) {
+    if (ms < 0) ms = 0;
+    if (ms > 5000) ms = 5000;
+    m_settings.setValue(KEY_PASTE_DELAY, ms);
     emit changed();
 }
 

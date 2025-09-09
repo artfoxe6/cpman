@@ -15,6 +15,9 @@ public:
     bool autoPaste() const;
     void setAutoPaste(bool on);
 
+    int pasteDelayMs() const;
+    void setPasteDelayMs(int ms);
+
     int preloadCount() const;
     void setPreloadCount(int n);
 
@@ -36,4 +39,3 @@ signals:
 private:
     QSettings m_settings;
 };
-

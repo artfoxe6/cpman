@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) {
         popup.hidePopup();
         // Try to restore focus to the previously active app before autopaste
         focus.restoreForeground();
-        if (settings.autoPaste()) autoPaster.schedulePaste(1000);
+        if (settings.autoPaste()) autoPaster.schedulePaste(settings.pasteDelayMs());
         (void)id; // reserved for future favorite toggle or analytics
     });
 
@@ -146,6 +146,7 @@ int main(int argc, char* argv[]) {
     QObject::connect(&settingsDlg, &SettingsDialog::hotkeyChanged, [&](QKeySequence ks){ settings.setHotkey(ks); hotkey.unregister(); hotkey.registerHotkey(ks); });
     QObject::connect(&settingsDlg, &SettingsDialog::autoPasteChanged, [&](bool on){ settings.setAutoPaste(on); });
     QObject::connect(&settingsDlg, &SettingsDialog::preloadChanged, [&](int n){ settings.setPreloadCount(n); mem.setCapacity(std::clamp(n, 200, 5000)); mem.preload(db.fetchRecent(mem.capacity())); model.setItems(mem.items()); });
+    QObject::connect(&settingsDlg, &SettingsDialog::pasteDelayChanged, [&](int ms){ settings.setPasteDelayMs(ms); });
     QObject::connect(&settingsDlg, &SettingsDialog::pausedChanged, [&](bool on){ settings.setPaused(on); watcher.setPaused(on); tray.setPaused(on); });
     QObject::connect(&settingsDlg, &SettingsDialog::cleanupRequested, [&](int days){
         const qint64 cutoff = QDateTime::currentMSecsSinceEpoch() - qint64(days) * 24 * 3600 * 1000;

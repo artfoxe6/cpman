@@ -29,9 +29,19 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
     v->addLayout(hotRow);
 
     // Auto paste
-    auto* chkAuto = new QCheckBox(QStringLiteral("自动粘贴 (回车后 1000ms)"));
+    auto* apRow = new QHBoxLayout();
+    auto* chkAuto = new QCheckBox(QStringLiteral("自动粘贴"));
     chkAuto->setChecked(m_settings->autoPaste());
-    v->addWidget(chkAuto);
+    apRow->addWidget(chkAuto);
+    apRow->addSpacing(12);
+    apRow->addWidget(new QLabel(QStringLiteral("粘贴延时 (ms, 0-5000):")));
+    auto* spDelay = new QSpinBox();
+    spDelay->setRange(0, 5000);
+    spDelay->setSingleStep(50);
+    spDelay->setValue(m_settings->pasteDelayMs());
+    spDelay->setEnabled(m_settings->autoPaste());
+    apRow->addWidget(spDelay);
+    v->addLayout(apRow);
 
     // Preload count
     auto* preRow = new QHBoxLayout();
@@ -105,7 +115,8 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
 
     // Signals
     connect(keyEdit, &QKeySequenceEdit::keySequenceChanged, this, [this](const QKeySequence& ks){ emit hotkeyChanged(ks); });
-    connect(chkAuto, &QCheckBox::toggled, this, [this](bool on){ emit autoPasteChanged(on); });
+    connect(chkAuto, &QCheckBox::toggled, this, [this, spDelay](bool on){ spDelay->setEnabled(on); emit autoPasteChanged(on); });
+    connect(spDelay, qOverload<int>(&QSpinBox::valueChanged), this, [this](int ms){ emit pasteDelayChanged(ms); });
     connect(spPreload, qOverload<int>(&QSpinBox::valueChanged), this, [this](int n){ emit preloadChanged(n); });
     connect(chkPause, &QCheckBox::toggled, this, [this](bool on){ emit pausedChanged(on); });
     connect(btnClean, &QPushButton::clicked, this, [this, spDays]{ emit cleanupRequested(spDays->value()); });

@@ -15,6 +15,7 @@ public:
 signals:
     void hotkeyChanged(QKeySequence);
     void autoPasteChanged(bool);
+    void pasteDelayChanged(int);
     void preloadChanged(int);
     void pausedChanged(bool);
     void cleanupRequested(int days);
