@@ -19,7 +19,6 @@ signals:
     void autoPasteChanged(bool);
     void pasteDelayChanged(int);
     void preloadChanged(int);
-    void pausedChanged(bool);
     void cleanupRequested(int days);
     void windowSizeChanged(QSize);
     void useCurrentWindowSizeRequested();

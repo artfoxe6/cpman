@@ -11,13 +11,11 @@ TrayIcon::TrayIcon(QObject* parent) : QObject(parent) {
     m_menu = new QMenu();
     auto actToggle = m_menu->addAction(QStringLiteral("打开/关闭"));
     auto actSettings = m_menu->addAction(QStringLiteral("设置…"));
-    m_pauseAction = m_menu->addAction(QStringLiteral("暂停监听"));
     m_menu->addSeparator();
     auto actQuit = m_menu->addAction(QStringLiteral("退出"));
 
     connect(actToggle, &QAction::triggered, this, &TrayIcon::onToggle);
     connect(actSettings, &QAction::triggered, this, &TrayIcon::onSettings);
-    connect(m_pauseAction, &QAction::triggered, this, &TrayIcon::onPause);
     connect(actQuit, &QAction::triggered, this, &TrayIcon::onQuit);
 
     m_tray.setContextMenu(m_menu);
@@ -40,18 +38,7 @@ void TrayIcon::onToggle() { emit togglePopupRequested(); }
 
 void TrayIcon::onSettings() { emit settingsRequested(); }
 
-void TrayIcon::onPause() {
-    m_paused = !m_paused;
-    m_pauseAction->setText(m_paused ? QStringLiteral("恢复监听") : QStringLiteral("暂停监听"));
-    emit pauseToggled(m_paused);
-}
-
 void TrayIcon::onQuit() { emit quitRequested(); }
-
-void TrayIcon::setPaused(bool paused) {
-    m_paused = paused;
-    if (m_pauseAction) m_pauseAction->setText(m_paused ? QStringLiteral("恢复监听") : QStringLiteral("暂停监听"));
-}
 
 void TrayIcon::attachSettings(Settings* settings) {
     m_settings = settings;

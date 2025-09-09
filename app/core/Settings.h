@@ -25,9 +25,6 @@ public:
     bool allowRepeat() const;
     void setAllowRepeat(bool on);
 
-    bool paused() const;
-    void setPaused(bool on);
-
     QStringList blacklist() const;
     void setBlacklist(const QStringList& list);
 

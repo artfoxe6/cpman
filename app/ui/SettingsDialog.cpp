@@ -52,10 +52,7 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
     preRow->addWidget(spPreload);
     v->addLayout(preRow);
 
-    // Pause
-    auto* chkPause = new QCheckBox(QStringLiteral("暂停监听"));
-    chkPause->setChecked(m_settings->paused());
-    v->addWidget(chkPause);
+    // removed: pause listening checkbox
 
     // Theme mode selector removed: always follow system theme
 
@@ -139,7 +136,6 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
     connect(chkAuto, &QCheckBox::toggled, this, [this, spDelay](bool on){ spDelay->setEnabled(on); emit autoPasteChanged(on); });
     connect(spDelay, qOverload<int>(&QSpinBox::valueChanged), this, [this](int ms){ emit pasteDelayChanged(ms); });
     connect(spPreload, qOverload<int>(&QSpinBox::valueChanged), this, [this](int n){ emit preloadChanged(n); });
-    connect(chkPause, &QCheckBox::toggled, this, [this](bool on){ emit pausedChanged(on); });
     connect(btnClean, &QPushButton::clicked, this, [this, spDays]{ emit cleanupRequested(spDays->value()); });
     connect(btnRepo, &QPushButton::clicked, this, []{ QDesktopServices::openUrl(QUrl("https://github.com/xxxx/xxxx")); });
     // Open storage directories

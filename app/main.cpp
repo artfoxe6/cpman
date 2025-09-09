@@ -51,14 +51,10 @@ int main(int argc, char* argv[]) {
 
     ClipboardWatcher watcher(&db, &mem, &imageStore, &settings);
     watcher.start();
-    // Apply initial paused state from settings
-    watcher.setPaused(settings.paused());
 
     TrayIcon tray;
     tray.attachSettings(&settings);
     tray.show();
-    // Reflect initial paused state in tray menu label
-    tray.setPaused(settings.paused());
 
     MainPopup popup;
     FocusManager focus;
@@ -93,7 +89,6 @@ int main(int argc, char* argv[]) {
         if (popup.isVisible()) popup.hidePopup();
         else { focus.rememberForeground(); popup.showPopup(); }
     });
-    QObject::connect(&tray, &TrayIcon::pauseToggled, &watcher, &ClipboardWatcher::setPaused);
     QObject::connect(&tray, &TrayIcon::quitRequested, &app, &QApplication::quit);
     QObject::connect(&instance, &SingleInstance::showRequested, [&]{ focus.rememberForeground(); popup.showPopup(); });
 
@@ -169,7 +164,6 @@ int main(int argc, char* argv[]) {
     QObject::connect(&settingsDlg, &SettingsDialog::autoPasteChanged, [&](bool on){ settings.setAutoPaste(on); });
     QObject::connect(&settingsDlg, &SettingsDialog::preloadChanged, [&](int n){ settings.setPreloadCount(n); mem.setCapacity(std::clamp(n, 200, 5000)); mem.preload(db.fetchRecent(mem.capacity())); model.setItems(mem.items()); });
     QObject::connect(&settingsDlg, &SettingsDialog::pasteDelayChanged, [&](int ms){ settings.setPasteDelayMs(ms); });
-    QObject::connect(&settingsDlg, &SettingsDialog::pausedChanged, [&](bool on){ settings.setPaused(on); watcher.setPaused(on); tray.setPaused(on); });
     QObject::connect(&settingsDlg, &SettingsDialog::cleanupRequested, [&](int days){
         const qint64 cutoff = QDateTime::currentMSecsSinceEpoch() - qint64(days) * 24 * 3600 * 1000;
         QStringList mediaToRemove;
