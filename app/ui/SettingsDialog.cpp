@@ -78,27 +78,39 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
     sizeRow->addWidget(btnUseCurrent);
     v->addLayout(sizeRow);
 
-    // Storage stats
+    // Storage stats with open-folder buttons
+    const QString base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     auto* lblDb = new QLabel();
+    auto* btnOpenDbDir = new QPushButton(QStringLiteral("打开目录"));
+    auto* dbRow = new QHBoxLayout();
+    dbRow->addWidget(lblDb, 1);
+    dbRow->addWidget(btnOpenDbDir);
+    v->addLayout(dbRow);
+
     auto* lblMedia = new QLabel();
+    auto* btnOpenMediaDir = new QPushButton(QStringLiteral("打开目录"));
+    auto* mediaRow = new QHBoxLayout();
+    mediaRow->addWidget(lblMedia, 1);
+    mediaRow->addWidget(btnOpenMediaDir);
+    v->addLayout(mediaRow);
+
+    auto sizeToStr = [](qint64 s){
+        const char* units[] = {"B","KB","MB","GB"}; int i=0; double d=s; while (d>1024 && i<3){d/=1024; ++i;} return QString::number(d,'f', (i==0?0:1)) + " " + units[i]; };
     auto refreshStats = [&, this]() {
         // Compute sizes
-        // DB path is determined by QStandardPaths inside Database; recompute here via QStandardPaths as well
-        QString base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
         QFileInfo dbFi(base + "/clipboard.db");
-        auto sizeToStr = [](qint64 s){
-            const char* units[] = {"B","KB","MB","GB"}; int i=0; double d=s; while (d>1024 && i<3){d/=1024; ++i;} return QString::number(d,'f', (i==0?0:1)) + " " + units[i]; };
         lblDb->setText(QStringLiteral("数据库: %1").arg(dbFi.exists()? sizeToStr(dbFi.size()) : QStringLiteral("(不存在)")));
+        lblDb->setToolTip(dbFi.absoluteFilePath());
         // Media dir size
-        QDir mediaDir(base + "/media");
+        const QString mediaPath = base + "/media";
+        QDir mediaDir(mediaPath);
         qint64 total=0; if (mediaDir.exists()) {
             QDirIterator it(mediaDir.absolutePath(), QDir::Files, QDirIterator::Subdirectories);
             while (it.hasNext()) { it.next(); total += it.fileInfo().size(); }
         }
         lblMedia->setText(QStringLiteral("媒体: %1").arg(sizeToStr(total)));
+        lblMedia->setToolTip(mediaDir.absolutePath());
     };
-    v->addWidget(lblDb);
-    v->addWidget(lblMedia);
     refreshStats();
 
     // Cleanup controls
@@ -130,6 +142,17 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
     connect(chkPause, &QCheckBox::toggled, this, [this](bool on){ emit pausedChanged(on); });
     connect(btnClean, &QPushButton::clicked, this, [this, spDays]{ emit cleanupRequested(spDays->value()); });
     connect(btnRepo, &QPushButton::clicked, this, []{ QDesktopServices::openUrl(QUrl("https://github.com/xxxx/xxxx")); });
+    // Open storage directories
+    connect(btnOpenDbDir, &QPushButton::clicked, this, [base]{
+        // Ensure base dir exists and open its location (DB directory)
+        QDir().mkpath(base);
+        QDesktopServices::openUrl(QUrl::fromLocalFile(base));
+    });
+    connect(btnOpenMediaDir, &QPushButton::clicked, this, [base]{
+        const QString mediaPath = base + "/media";
+        QDir().mkpath(mediaPath);
+        QDesktopServices::openUrl(QUrl::fromLocalFile(mediaPath));
+    });
     // Theme switching disabled; always follow system, no signal needed
     connect(m_spW, qOverload<int>(&QSpinBox::valueChanged), this, [this](int){ emit windowSizeChanged(QSize(m_spW->value(), m_spH->value())); });
     connect(m_spH, qOverload<int>(&QSpinBox::valueChanged), this, [this](int){ emit windowSizeChanged(QSize(m_spW->value(), m_spH->value())); });
