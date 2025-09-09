@@ -3,6 +3,10 @@
 
 #include <QGuiApplication>
 #include <QStyleHints>
+#include <QTimer>
+#include <QStyle>
+#include <QApplication>
+#include <QPalette>
 
 namespace Theme {
 
@@ -28,6 +32,20 @@ QString icon(const QString& baseName, Qt::ColorScheme scheme) {
     if (baseName == QLatin1String("db"))
         return dark ? QStringLiteral(":/icons/dark/db_dark.svg") : QStringLiteral(":/icons/light/db_light.svg");
     return QString();
+}
+
+void refreshStyleAfterThemeChange() {
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    static bool inFlight = false;
+    if (inFlight) return;
+    inFlight = true;
+    // Defer to ensure Qt updates its internal palette first
+    QTimer::singleShot(0, []{
+        // Reset to platform default palette for current style
+        QGuiApplication::setPalette(QPalette());
+        inFlight = false;
+    });
+#endif
 }
 
 }

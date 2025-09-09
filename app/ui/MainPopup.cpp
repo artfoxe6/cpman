@@ -12,6 +12,7 @@
 #include <QApplication>
 #include <QGuiApplication>
 #include <QStyleHints>
+#include <QTimer>
 #include "Theme.h"
 #include <QMouseEvent>
 #include "PreviewPane.h"
@@ -97,7 +98,10 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     updateTopIcons();
     // React to theme change (for potential palette changes in styles)
 #if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
-    QObject::connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, this, [applyUi, updateTopIcons]{ applyUi(); updateTopIcons(); });
+    // Defer UI restyle until after Qt has finished updating the palette
+    QObject::connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, this, [applyUi, updateTopIcons]{
+        QTimer::singleShot(0, [applyUi, updateTopIcons]{ applyUi(); updateTopIcons(); });
+    });
 #endif
     top->addWidget(m_search, 1);
     top->addWidget(m_useDb);
@@ -172,6 +176,33 @@ void MainPopup::showPopup() {
 void MainPopup::hidePopup() { hide(); emit popupHidden(); }
 
 bool MainPopup::eventFilter(QObject* obj, QEvent* ev) {
+    // Also react to palette/style changes that may arrive on some Qt builds
+    if (ev->type() == QEvent::ApplicationPaletteChange || ev->type() == QEvent::PaletteChange || ev->type() == QEvent::StyleChange) {
+        // Guard to avoid infinite restyling loops
+        if (this->property("styleRefreshInProgress").toBool()) {
+            return QWidget::eventFilter(obj, ev);
+        }
+        this->setProperty("styleRefreshInProgress", true);
+        // Re-apply stylesheet which uses palette(...) so it repolishes correctly
+        QTimer::singleShot(0, [this]{
+            // Re-run the same initialization tweaks
+            if (m_search) {
+                m_search->setStyleSheet(
+                    "QLineEdit{border:none;padding:8px 10px;background:palette(base);border-radius:6px;}"
+                    "QLineEdit:focus{outline:none;}"
+                );
+            }
+            const QString ss =
+                " QScrollBar:vertical{width:4px;margin:0;background:transparent;}"
+                " QScrollBar:horizontal{height:4px;margin:0;background:transparent;}"
+                " QScrollBar::handle:vertical{background:palette(mid);min-height:24px;border-radius:2px;margin:0;}"
+                " QScrollBar::handle:horizontal{background:palette(mid);min-width:24px;border-radius:2px;margin:0;}"
+                " QScrollBar::add-line, QScrollBar::sub-line{height:0;width:0;background:transparent;}"
+                " QScrollBar::add-page, QScrollBar::sub-page{background:transparent;}";
+            this->setStyleSheet(ss);
+            this->setProperty("styleRefreshInProgress", false);
+        });
+    }
     // Allow dragging the popup by grabbing the container background
     if (obj == m_container) {
         if (ev->type() == QEvent::MouseButtonPress) {

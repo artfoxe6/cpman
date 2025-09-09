@@ -51,10 +51,21 @@ target_link_libraries(cpman PRIVATE Qt6::Widgets Qt6::Gui Qt6::Sql Qt6::Concurre
 
 option(HAVE_QHOTKEY "Enable QHotkey integration" ON)
 if(HAVE_QHOTKEY)
-  # Try to find a system-provided QHotkey first
+  # Prefer vendored QHotkey if present
+  if (EXISTS "${CMAKE_SOURCE_DIR}/third_party/QHotkey/CMakeLists.txt")
+    message(STATUS "Using vendored QHotkey at third_party/QHotkey")
+    # Ensure QHotkey builds against Qt 6 to match this project
+    set(QT_DEFAULT_MAJOR_VERSION 6 CACHE STRING "Qt version for QHotkey" FORCE)
+    # Avoid extra install/exports from the subproject
+    set(QHOTKEY_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(QHOTKEY_INSTALL OFF CACHE BOOL "" FORCE)
+    add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/QHotkey" third_party/QHotkey-build EXCLUDE_FROM_ALL)
+  endif()
+
+  # Try to find a system-provided QHotkey first (or the vendored target)
   find_package(QHotkey QUIET)
 
-  # If not found, fetch from GitHub and make available
+  # If not found and no vendored target, fetch from GitHub
   if (NOT QHOTKEY_FOUND AND NOT TARGET QHotkey::QHotkey)
     include(FetchContent)
     message(STATUS "QHotkey not found locally; fetching from GitHub...")

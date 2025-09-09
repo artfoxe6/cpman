@@ -5,6 +5,8 @@
 #include <QListView>
 #include <QDateTime>
 #include <algorithm>
+#include <QGuiApplication>
+#include <QStyleHints>
 
 #include "core/Settings.h"
 #include "core/Database.h"
@@ -22,6 +24,7 @@
 #include "ui/HistoryItemDelegate.h"
 #include "ui/SettingsDialog.h"
 #include "ui/PreviewPane.h"
+#include "ui/Theme.h"
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
@@ -55,6 +58,13 @@ int main(int argc, char* argv[]) {
     TrayIcon tray;
     tray.attachSettings(&settings);
     tray.show();
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
+    // On some macOS/Qt builds, immediate updates can leave mixed palettes.
+    QObject::connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, &app, []{
+        Theme::refreshStyleAfterThemeChange();
+    });
+#endif
 
     MainPopup popup;
     FocusManager focus;

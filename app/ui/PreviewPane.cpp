@@ -9,6 +9,7 @@
 #include <QFont>
 #include <QGuiApplication>
 #include <QStyleHints>
+#include <QTimer>
 #include "Theme.h"
 #include "../core/Settings.h"
 
@@ -55,7 +56,10 @@ PreviewPane::PreviewPane(QWidget* parent) : QWidget(parent) {
     connect(m_heart, &QPushButton::clicked, this, &PreviewPane::onHeart);
     // react to theme changes
 #if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
-    QObject::connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, this, [this]{ updateHeart(); updateImageDisplay(); });
+    // Defer updates to avoid picking stale palette/icon variants during transition
+    QObject::connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, this, [this]{
+        QTimer::singleShot(0, [this]{ updateHeart(); updateImageDisplay(); });
+    });
 #endif
 }
 
