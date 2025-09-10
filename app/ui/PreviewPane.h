@@ -45,6 +45,7 @@ private:
     bool m_fitToWidth = true;
     QLabel* m_textLabel = nullptr;
     QLabel* m_imageLabel = nullptr;
+    class QScrollArea* m_contentScroll = nullptr;
     QPushButton* m_heart = nullptr;
     QLabel* m_scaleLabel = nullptr;
     QLabel* m_sourceLabel = nullptr;

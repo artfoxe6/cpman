@@ -19,22 +19,53 @@ PreviewPane::PreviewPane(QWidget* parent) : QWidget(parent) {
     auto* v = new QVBoxLayout(this);
     v->setContentsMargins(8,8,8,8);
     auto* top = new QHBoxLayout();
-    m_scaleLabel = new QLabel();
-    // Color adapts via applySecondaryTextStyle()
-    m_scaleLabel->setVisible(false); // hide scale indicator text per UX
-    top->addWidget(m_scaleLabel);
-    top->addStretch();
-    m_sourceLabel = new QLabel();
-    // Color adapts via applySecondaryTextStyle()
-    m_sourceLabel->setVisible(false);
-    top->addWidget(m_sourceLabel);
+    // Heart button placed in top layout (LEFT side)
+    m_heart = new QPushButton(this);
+    m_heart->setObjectName("previewHeart");
+    m_heart->setFlat(true);
+    m_heart->setCursor(Qt::PointingHandCursor);
+    // Keep popup's keyboard focus on the search box
+    m_heart->setFocusPolicy(Qt::NoFocus);
+    m_heart->setToolTip(QStringLiteral("切换收藏 (Ctrl/⌘+D)"));
+    // Keep square button to avoid icon squashing
+    m_heart->setStyleSheet("QPushButton{background:transparent;border:none;padding:4px;} QPushButton:hover{background:rgba(127,127,127,0.12);border-radius:6px;}");
+    // Shrink heart icon/button by 20%
+    m_heart->setIconSize(QSize(16, 16));
+    m_heart->setFixedSize(QSize(22, 22));
+    m_heart->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    top->addWidget(m_heart);
+    top->addSpacing(6);
 
     m_usageLabel = new QLabel();
     // Color adapts via applySecondaryTextStyle()
     m_usageLabel->setText(QStringLiteral("使用次数：0"));
     m_usageLabel->setVisible(false);
     top->addWidget(m_usageLabel);
+
+    top->addSpacing(10);
+    m_sourceLabel = new QLabel();
+    // Color adapts via applySecondaryTextStyle()
+    m_sourceLabel->setVisible(false);
+    top->addWidget(m_sourceLabel);
+
+    top->addStretch();
+    m_scaleLabel = new QLabel();
+    // Color adapts via applySecondaryTextStyle()
+    m_scaleLabel->setVisible(false); // hide scale indicator text per UX
+    top->addWidget(m_scaleLabel);
     v->addLayout(top);
+
+    // Content scroll area below the fixed top bar
+    m_contentScroll = new QScrollArea(this);
+    m_contentScroll->setFrameShape(QFrame::NoFrame);
+    m_contentScroll->setWidgetResizable(true);
+    // Default: no horizontal scroll for fit-to-width; can be enabled for 100% images
+    m_contentScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    // Create inner content widget
+    auto* content = new QWidget();
+    auto* contentLayout = new QVBoxLayout(content);
+    contentLayout->setContentsMargins(0, 0, 0, 0);
+    contentLayout->setSpacing(0);
 
     m_textLabel = new QLabel();
     m_textLabel->setWordWrap(true);
@@ -50,30 +81,19 @@ PreviewPane::PreviewPane(QWidget* parent) : QWidget(parent) {
         m_textLabel->setFont(f);
     }
     m_textLabel->setVisible(false);
-    v->addWidget(m_textLabel, 1);
+    contentLayout->addWidget(m_textLabel, 1);
 
     m_imageLabel = new QLabel();
     m_imageLabel->setFocusPolicy(Qt::NoFocus);
     m_imageLabel->setVisible(false);
     m_imageLabel->installEventFilter(this);
     m_imageLabel->setAlignment(Qt::AlignTop | Qt::AlignLeft);
-    v->addWidget(m_imageLabel, 1);
+    contentLayout->addWidget(m_imageLabel, 1);
 
-    // Heart button placed in top layout (right side)
-    m_heart = new QPushButton(this);
-    m_heart->setObjectName("previewHeart");
-    m_heart->setFlat(true);
-    m_heart->setCursor(Qt::PointingHandCursor);
-    // Keep popup's keyboard focus on the search box
-    m_heart->setFocusPolicy(Qt::NoFocus);
-    m_heart->setToolTip(QStringLiteral("切换收藏 (Ctrl/⌘+D)"));
-    // Keep square button to avoid icon squashing
-    m_heart->setStyleSheet("QPushButton{background:transparent;border:none;padding:4px;} QPushButton:hover{background:rgba(127,127,127,0.12);border-radius:6px;}");
-    m_heart->setIconSize(QSize(20, 20));
-    m_heart->setFixedSize(QSize(28, 28));
-    m_heart->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    // add to layout
-    top->addWidget(m_heart);
+    m_contentScroll->setWidget(content);
+    v->addWidget(m_contentScroll, 1);
+
+    // heart click handler
     connect(m_heart, &QPushButton::clicked, this, &PreviewPane::onHeart);
     // react to theme changes
 #if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
@@ -168,21 +188,13 @@ void PreviewPane::updateHeart() {
 
 void PreviewPane::updateImageDisplay() {
     if (m_imageOrig.isNull()) return;
-    // Try to locate the parent scroll area to manage scrollbars
-    QScrollArea* sa = nullptr;
-    {
-        QWidget* p = this->parentWidget();
-        while (p && !qobject_cast<QScrollArea*>(p)) p = p->parentWidget();
-        sa = qobject_cast<QScrollArea*>(p);
-    }
-    // In fit-to-width mode, disable horizontal scrollbar; in 100% mode, allow as needed
-    if (sa) sa->setHorizontalScrollBarPolicy(m_fitToWidth ? Qt::ScrollBarAlwaysOff : Qt::ScrollBarAsNeeded);
+    // Manage scrollbars on the inner content scroll area only
+    if (m_contentScroll) m_contentScroll->setHorizontalScrollBarPolicy(m_fitToWidth ? Qt::ScrollBarAlwaysOff : Qt::ScrollBarAsNeeded);
     if (m_fitToWidth) {
-        // Prefer the scroll area's viewport width to avoid feedback resizing
+        // Prefer the content scroll viewport width to avoid feedback resizing
         int vpw = this->width();
-        if (sa) vpw = sa->viewport()->width();
-        // Account for left/right layout margins (8 + 8)
-        int w = vpw - 16;
+        if (m_contentScroll) vpw = m_contentScroll->viewport()->width();
+        int w = vpw;
         if (w < 1) w = 1;
         {
             QPixmap cur = m_imageLabel->pixmap();
