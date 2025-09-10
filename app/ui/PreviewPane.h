@@ -26,6 +26,7 @@ signals:
 protected:
     bool eventFilter(QObject* obj, QEvent* ev) override;
     void resizeEvent(QResizeEvent* e) override;
+    void changeEvent(QEvent* e) override;
 
 private slots:
     void onHeart();
@@ -36,6 +37,7 @@ private:
     void updateScaleLabel();
     void updateUsageLabel();
     void updateSourceLabel();
+    void applySecondaryTextStyle();
 
     qint64 m_id = 0;
     bool m_favorite = false;
