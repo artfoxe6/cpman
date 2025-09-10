@@ -19,6 +19,7 @@ PreviewPane::PreviewPane(QWidget* parent) : QWidget(parent) {
     auto* top = new QHBoxLayout();
     m_scaleLabel = new QLabel();
     m_scaleLabel->setStyleSheet("color: palette(mid); font-size: 11px;");
+    m_scaleLabel->setVisible(false); // hide scale indicator text per UX
     top->addWidget(m_scaleLabel);
     top->addStretch();
     m_sourceLabel = new QLabel();
@@ -170,12 +171,10 @@ void PreviewPane::updateImageDisplay() {
 }
 
 void PreviewPane::updateScaleLabel() {
-    if (!m_isImage) { m_scaleLabel->setText(QString()); return; }
-    if (m_fitToWidth) {
-        m_scaleLabel->setText(QStringLiteral("适应宽度"));
-    } else {
-        m_scaleLabel->setText(QStringLiteral("100%"));
-    }
+    // Removed scale text from UI; keep label hidden
+    if (!m_scaleLabel) return;
+    m_scaleLabel->clear();
+    m_scaleLabel->setVisible(false);
 }
 
 void PreviewPane::updateUsageLabel() {

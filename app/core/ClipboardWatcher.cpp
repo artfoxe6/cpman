@@ -78,7 +78,8 @@ void ClipboardWatcher::onClipboardChanged() {
     }
 
     if (md->hasText()) {
-        const QString text = md->text();
+        const QString raw = md->text();
+        const QString text = raw.trimmed(); // trim leading/trailing whitespace only
         if (text.toUtf8().size() > 100*1024) return; // limit 100KB
         if (text.isEmpty()) return;
         // Full DB dedupe: if exists, retime instead of inserting
