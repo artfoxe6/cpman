@@ -37,6 +37,7 @@ QVariant HistoryListModel::data(const QModelIndex& index, int role) const {
         case CreatedAtRole: return it.createdAt;
         case UsageCountRole: return it.usageCount;
         case HashRole: return it.hash;
+        case AppNameRole: return it.appName;
         default: return {};
     }
 }
@@ -50,7 +51,8 @@ QHash<int, QByteArray> HistoryListModel::roleNames() const {
         {FavoriteRole, "favorite"},
         {CreatedAtRole, "createdAt"},
         {UsageCountRole, "usageCount"},
-        {HashRole, "hash"}
+        {HashRole, "hash"},
+        {AppNameRole, "appName"}
     };
 }
 

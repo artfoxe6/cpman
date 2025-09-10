@@ -388,13 +388,14 @@ void MainPopup::updatePreviewFromIndex(const QModelIndex& idx) {
     m_currentItemId = id;
     const bool fav = idx.data(Qt::UserRole + 5).toBool(); // FavoriteRole
     const int usage = idx.data(Qt::UserRole + 7).toInt(); // UsageCountRole
+    const QString appName = idx.data(Qt::UserRole + 9).toString(); // AppNameRole
     if (type == "text") {
         const QString text = idx.data(Qt::UserRole + 3).toString(); // TextRole
-        m_preview->showText(id, text, fav, usage);
+        m_preview->showText(id, text, fav, usage, appName);
     } else {
         const QString path = idx.data(Qt::UserRole + 4).toString(); // MediaPathRole
         QImage img(path);
-        if (!img.isNull()) m_preview->showImage(id, img, fav, usage);
+        if (!img.isNull()) m_preview->showImage(id, img, fav, usage, appName);
     }
 }
 

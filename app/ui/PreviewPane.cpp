@@ -21,6 +21,11 @@ PreviewPane::PreviewPane(QWidget* parent) : QWidget(parent) {
     m_scaleLabel->setStyleSheet("color: palette(mid); font-size: 11px;");
     top->addWidget(m_scaleLabel);
     top->addStretch();
+    m_sourceLabel = new QLabel();
+    m_sourceLabel->setStyleSheet("color: palette(mid); font-size: 11px;");
+    m_sourceLabel->setVisible(false);
+    top->addWidget(m_sourceLabel);
+
     m_usageLabel = new QLabel();
     m_usageLabel->setStyleSheet("color: palette(mid); font-size: 11px;");
     m_usageLabel->setText(QStringLiteral("使用次数：0"));
@@ -68,20 +73,22 @@ PreviewPane::PreviewPane(QWidget* parent) : QWidget(parent) {
 #endif
 }
 
-void PreviewPane::showText(qint64 id, const QString& text, bool favorite, int usageCount) {
-    m_id = id; m_favorite = favorite; m_isImage = false; m_usageCount = usageCount;
+void PreviewPane::showText(qint64 id, const QString& text, bool favorite, int usageCount, const QString& appName) {
+    m_id = id; m_favorite = favorite; m_isImage = false; m_usageCount = usageCount; m_appName = appName;
     m_textLabel->setText(text);
     m_textLabel->setVisible(true);
     m_imageLabel->setVisible(false);
     m_heart->setVisible(true);
     updateHeart();
     updateScaleLabel();
+    m_sourceLabel->setVisible(!m_appName.trimmed().isEmpty());
+    updateSourceLabel();
     m_usageLabel->setVisible(true);
     updateUsageLabel();
 }
 
-void PreviewPane::showImage(qint64 id, const QImage& img, bool favorite, int usageCount) {
-    m_id = id; m_favorite = favorite; m_isImage = true; m_fitToWidth = true; m_usageCount = usageCount;
+void PreviewPane::showImage(qint64 id, const QImage& img, bool favorite, int usageCount, const QString& appName) {
+    m_id = id; m_favorite = favorite; m_isImage = true; m_fitToWidth = true; m_usageCount = usageCount; m_appName = appName;
     m_imageOrig = QPixmap::fromImage(img);
     m_imageLabel->setVisible(true);
     m_textLabel->setVisible(false);
@@ -89,6 +96,8 @@ void PreviewPane::showImage(qint64 id, const QImage& img, bool favorite, int usa
     updateImageDisplay();
     updateScaleLabel();
     updateHeart();
+    m_sourceLabel->setVisible(!m_appName.trimmed().isEmpty());
+    updateSourceLabel();
     m_usageLabel->setVisible(true);
     updateUsageLabel();
 }
@@ -174,6 +183,18 @@ void PreviewPane::updateUsageLabel() {
     m_usageLabel->setText(QStringLiteral("使用次数：%1").arg(m_usageCount));
 }
 
+void PreviewPane::updateSourceLabel() {
+    if (!m_sourceLabel) return;
+    const QString name = m_appName.trimmed();
+    if (name.isEmpty()) {
+        m_sourceLabel->clear();
+        m_sourceLabel->setVisible(false);
+    } else {
+        m_sourceLabel->setText(QStringLiteral("来源：%1").arg(name));
+        m_sourceLabel->setVisible(true);
+    }
+}
+
 void PreviewPane::attachSettings(Settings* settings) {
     m_settings = settings;
     if (m_settings) QObject::connect(m_settings, &Settings::changed, this, [this]{ updateHeart(); updateImageDisplay(); });
@@ -191,5 +212,6 @@ void PreviewPane::clear() {
     m_imageLabel->setVisible(false);
     m_heart->setVisible(false);
     m_usageLabel->setVisible(false);
+    if (m_sourceLabel) { m_sourceLabel->clear(); m_sourceLabel->setVisible(false); }
     m_scaleLabel->clear();
 }
