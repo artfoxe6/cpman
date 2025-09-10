@@ -174,15 +174,19 @@ int main(int argc, char* argv[]) {
     QObject::connect(&settingsDlg, &SettingsDialog::autoPasteChanged, [&](bool on){ settings.setAutoPaste(on); });
     QObject::connect(&settingsDlg, &SettingsDialog::preloadChanged, [&](int n){ settings.setPreloadCount(n); mem.setCapacity(std::clamp(n, 200, 5000)); mem.preload(db.fetchRecent(mem.capacity())); model.setItems(mem.items()); });
     QObject::connect(&settingsDlg, &SettingsDialog::pasteDelayChanged, [&](int ms){ settings.setPasteDelayMs(ms); });
-    QObject::connect(&settingsDlg, &SettingsDialog::cleanupRequested, [&](int days){
+    QObject::connect(&settingsDlg, &SettingsDialog::cleanupRequested, [&](int days, int usageSkipGreaterThan){
+        qInfo() << "Cleanup requested days=" << days << ", skip usage >" << usageSkipGreaterThan;
         const qint64 cutoff = QDateTime::currentMSecsSinceEpoch() - qint64(days) * 24 * 3600 * 1000;
         QStringList mediaToRemove;
-        if (db.deleteOlderThan(cutoff, &mediaToRemove)) {
+        int deleted = 0;
+        if (db.deleteOlderThan(cutoff, &mediaToRemove, usageSkipGreaterThan, &deleted)) {
             imageStore.removeMediaFiles(mediaToRemove);
             db.vacuum();
             // Reload memory set
             mem.preload(db.fetchRecent(mem.capacity()));
             model.setItems(mem.items());
+            qInfo() << "Cleanup removed rows:" << deleted;
+            settingsDlg.refreshStorageStats();
         }
     });
     QObject::connect(&settingsDlg, &SettingsDialog::windowSizeChanged, [&](QSize sz){

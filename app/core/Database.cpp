@@ -61,9 +61,15 @@ bool Database::migrate() {
     if (!cols.contains("usage_count")) {
         QSqlQuery qa(m_db);
         if (!qa.exec("ALTER TABLE items ADD COLUMN usage_count INTEGER DEFAULT 0")) {
-            // ignore; on older SQLite without ALTER TABLE capabilities or if failed, read as 0 elsewhere
+            emit error(QStringLiteral("Failed to add usage_count: %1").arg(qa.lastError().text()));
+        }
+        // Re-read columns after attempted migration
+        cols.clear();
+        if (q.exec("PRAGMA table_info(items)")) {
+            while (q.next()) cols.insert(q.value(1).toString());
         }
     }
+    m_hasUsageCount = cols.contains("usage_count");
 
     ensureFts();
     return true;
@@ -216,22 +222,61 @@ bool Database::vacuum() {
     return q.exec("VACUUM");
 }
 
-bool Database::deleteOlderThan(qint64 cutoffMs, QStringList* outMediaPaths) {
+bool Database::deleteOlderThan(qint64 cutoffMs, QStringList* outMediaPaths, int usageSkipGreaterThan, int* outDeletedCount) {
     // Collect media paths first to delete files after DB cleanup
     if (outMediaPaths) outMediaPaths->clear();
+    const bool withUsage = (usageSkipGreaterThan >= 0) && m_hasUsageCount;
     QSqlQuery qsel(m_db);
-    qsel.prepare("SELECT media_path FROM items WHERE created_at < ? AND type='image' AND media_path IS NOT NULL");
-    qsel.addBindValue(cutoffMs);
+    if (withUsage) {
+        qsel.prepare("SELECT media_path FROM items WHERE created_at < ? AND type='image' AND media_path IS NOT NULL AND COALESCE(usage_count,0) <= ?");
+        qsel.addBindValue(cutoffMs);
+        qsel.addBindValue(usageSkipGreaterThan);
+    } else {
+        qsel.prepare("SELECT media_path FROM items WHERE created_at < ? AND type='image' AND media_path IS NOT NULL");
+        qsel.addBindValue(cutoffMs);
+    }
     if (qsel.exec()) {
         while (qsel.next()) {
             const QString p = qsel.value(0).toString();
             if (outMediaPaths && !p.isEmpty()) outMediaPaths->push_back(p);
         }
+    } else {
+        emit error(QStringLiteral("Cleanup select failed: %1").arg(qsel.lastError().text()));
+        return false;
     }
+    // Pre-count rows to delete (for user feedback)
+    int willDelete = -1;
+    {
+        QSqlQuery qc(m_db);
+        if (withUsage) {
+            qc.prepare("SELECT COUNT(*) FROM items WHERE created_at < ? AND COALESCE(usage_count,0) <= ?");
+            qc.addBindValue(cutoffMs);
+            qc.addBindValue(usageSkipGreaterThan);
+        } else {
+            qc.prepare("SELECT COUNT(*) FROM items WHERE created_at < ?");
+            qc.addBindValue(cutoffMs);
+        }
+        if (qc.exec() && qc.next()) willDelete = qc.value(0).toInt();
+    }
+
     QSqlQuery q(m_db);
-    q.prepare("DELETE FROM items WHERE created_at < ?");
-    q.addBindValue(cutoffMs);
-    if (!q.exec()) return false;
+    if (withUsage) {
+        q.prepare("DELETE FROM items WHERE created_at < ? AND COALESCE(usage_count,0) <= ?");
+        q.addBindValue(cutoffMs);
+        q.addBindValue(usageSkipGreaterThan);
+    } else {
+        q.prepare("DELETE FROM items WHERE created_at < ?");
+        q.addBindValue(cutoffMs);
+    }
+    if (!q.exec()) {
+        emit error(QStringLiteral("Cleanup delete failed: %1").arg(q.lastError().text()));
+        return false;
+    }
+    if (outDeletedCount) {
+        // Prefer accurate driver count, fallback to pre-count
+        const qint64 n = q.numRowsAffected();
+        *outDeletedCount = (n >= 0 ? int(n) : willDelete);
+    }
     return true;
 }
 

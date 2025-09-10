@@ -77,45 +77,35 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
 
     // Storage stats with open-folder buttons
     const QString base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    auto* lblDb = new QLabel();
+    m_lblDb = new QLabel();
     auto* btnOpenDbDir = new QPushButton(QStringLiteral("打开目录"));
     auto* dbRow = new QHBoxLayout();
-    dbRow->addWidget(lblDb, 1);
+    dbRow->addWidget(m_lblDb, 1);
     dbRow->addWidget(btnOpenDbDir);
     v->addLayout(dbRow);
 
-    auto* lblMedia = new QLabel();
+    m_lblMedia = new QLabel();
     auto* btnOpenMediaDir = new QPushButton(QStringLiteral("打开目录"));
     auto* mediaRow = new QHBoxLayout();
-    mediaRow->addWidget(lblMedia, 1);
+    mediaRow->addWidget(m_lblMedia, 1);
     mediaRow->addWidget(btnOpenMediaDir);
     v->addLayout(mediaRow);
 
-    auto sizeToStr = [](qint64 s){
-        const char* units[] = {"B","KB","MB","GB"}; int i=0; double d=s; while (d>1024 && i<3){d/=1024; ++i;} return QString::number(d,'f', (i==0?0:1)) + " " + units[i]; };
-    auto refreshStats = [&, this]() {
-        // Compute sizes
-        QFileInfo dbFi(base + "/clipboard.db");
-        lblDb->setText(QStringLiteral("数据库: %1").arg(dbFi.exists()? sizeToStr(dbFi.size()) : QStringLiteral("(不存在)")));
-        lblDb->setToolTip(dbFi.absoluteFilePath());
-        // Media dir size
-        const QString mediaPath = base + "/media";
-        QDir mediaDir(mediaPath);
-        qint64 total=0; if (mediaDir.exists()) {
-            QDirIterator it(mediaDir.absolutePath(), QDir::Files, QDirIterator::Subdirectories);
-            while (it.hasNext()) { it.next(); total += it.fileInfo().size(); }
-        }
-        lblMedia->setText(QStringLiteral("媒体: %1").arg(sizeToStr(total)));
-        lblMedia->setToolTip(mediaDir.absolutePath());
-    };
-    refreshStats();
+    refreshStorageStats();
 
     // Cleanup controls
     auto* cleanRow = new QHBoxLayout();
     cleanRow->addWidget(new QLabel(QStringLiteral("清理 X 天前:")));
     auto* spDays = new QSpinBox(); spDays->setRange(1, 3650); spDays->setValue(30);
-    auto* btnClean = new QPushButton(QStringLiteral("执行清理"));
     cleanRow->addWidget(spDays);
+    cleanRow->addSpacing(12);
+    cleanRow->addWidget(new QLabel(QStringLiteral("跳过使用次数大于:")));
+    auto* spUsageSkip = new QSpinBox(); spUsageSkip->setRange(0, 1000000); spUsageSkip->setValue(0);
+    spUsageSkip->setToolTip(QStringLiteral("跳过使用次数大于此值的项目；0 表示跳过已使用(≥1次)的项目，仅删除从未使用的旧记录"));
+    cleanRow->addWidget(spUsageSkip);
+    cleanRow->addWidget(new QLabel(QStringLiteral("次")));
+    auto* btnClean = new QPushButton(QStringLiteral("执行清理"));
+    cleanRow->addSpacing(12);
     cleanRow->addWidget(btnClean);
     v->addLayout(cleanRow);
 
@@ -136,7 +126,7 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
     connect(chkAuto, &QCheckBox::toggled, this, [this, spDelay](bool on){ spDelay->setEnabled(on); emit autoPasteChanged(on); });
     connect(spDelay, qOverload<int>(&QSpinBox::valueChanged), this, [this](int ms){ emit pasteDelayChanged(ms); });
     connect(spPreload, qOverload<int>(&QSpinBox::valueChanged), this, [this](int n){ emit preloadChanged(n); });
-    connect(btnClean, &QPushButton::clicked, this, [this, spDays]{ emit cleanupRequested(spDays->value()); });
+    connect(btnClean, &QPushButton::clicked, this, [this, spDays, spUsageSkip]{ emit cleanupRequested(spDays->value(), spUsageSkip->value()); });
     connect(btnRepo, &QPushButton::clicked, this, []{ QDesktopServices::openUrl(QUrl("https://github.com/xxxx/xxxx")); });
     // Open storage directories
     connect(btnOpenDbDir, &QPushButton::clicked, this, [base]{
@@ -155,6 +145,29 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
     connect(btnUseCurrent, &QPushButton::clicked, this, [this]{ emit useCurrentWindowSizeRequested(); });
 
     // no extra persistence on accept
+}
+
+void SettingsDialog::refreshStorageStats() {
+    const QString base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    auto sizeToStr = [](qint64 s){
+        const char* units[] = {"B","KB","MB","GB"}; int i=0; double d=s; while (d>1024 && i<3){d/=1024; ++i;} return QString::number(d,'f', (i==0?0:1)) + " " + units[i]; };
+    // DB
+    QFileInfo dbFi(base + "/clipboard.db");
+    if (m_lblDb) {
+        m_lblDb->setText(QStringLiteral("数据库: %1").arg(dbFi.exists()? sizeToStr(dbFi.size()) : QStringLiteral("(不存在)")));
+        m_lblDb->setToolTip(dbFi.absoluteFilePath());
+    }
+    // Media dir
+    const QString mediaPath = base + "/media";
+    QDir mediaDir(mediaPath);
+    qint64 total=0; if (mediaDir.exists()) {
+        QDirIterator it(mediaDir.absolutePath(), QDir::Files, QDirIterator::Subdirectories);
+        while (it.hasNext()) { it.next(); total += it.fileInfo().size(); }
+    }
+    if (m_lblMedia) {
+        m_lblMedia->setText(QStringLiteral("媒体: %1").arg(sizeToStr(total)));
+        m_lblMedia->setToolTip(mediaDir.absolutePath());
+    }
 }
 
 void SettingsDialog::setWindowSizeDisplay(const QSize& sz) {

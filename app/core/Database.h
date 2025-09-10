@@ -22,7 +22,11 @@ public:
     bool retimeItem(qint64 id, qint64 createdAtMs);
     bool vacuum();
     bool hasFts() const { return m_hasFts; }
-    bool deleteOlderThan(qint64 cutoffMs, QStringList* outMediaPaths = nullptr);
+    // Delete items older than cutoff. If usageSkipGreaterThan >= 0, keep rows with usage_count > that value.
+    // Optionally returns number of rows deleted via outDeletedCount.
+    bool deleteOlderThan(qint64 cutoffMs, QStringList* outMediaPaths = nullptr, int usageSkipGreaterThan = -1, int* outDeletedCount = nullptr);
+
+    bool hasUsageCount() const { return m_hasUsageCount; }
 
     // Full-database deduplication helpers
     bool findByExactText(const QString& text, HistoryItem* outItem);
@@ -39,4 +43,5 @@ private:
     QSqlDatabase m_db;
     QString m_dbPath;
     bool m_hasFts = false;
+    bool m_hasUsageCount = false;
 };
