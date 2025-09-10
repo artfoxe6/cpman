@@ -216,6 +216,11 @@ void MainPopup::showPopup() {
     if (m_preview) {
         m_preview->clear();
     }
+    // Also clear any previous search input when reopening
+    if (m_search) {
+        // Only trigger clear if non-empty to avoid redundant signals
+        if (!m_search->text().isEmpty()) m_search->clear();
+    }
     show();
     raise();
     activateWindow();
