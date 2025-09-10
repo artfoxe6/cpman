@@ -116,6 +116,14 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     m_list->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_list->setMouseTracking(true);
     m_list->setSpacing(2);
+    // Make list item text slightly larger for readability
+    {
+        QFont lf = m_list->font();
+        if (lf.pointSizeF() > 0) lf.setPointSizeF(lf.pointSizeF() + 2);
+        else if (lf.pointSize() > 0) lf.setPointSize(lf.pointSize() + 2);
+        else if (lf.pixelSize() > 0) lf.setPixelSize(lf.pixelSize() + 2);
+        m_list->setFont(lf);
+    }
     // Keep keyboard focus on the search box: prevent the list from stealing focus on click
     m_list->setFocusPolicy(Qt::NoFocus);
     if (m_list->viewport()) m_list->viewport()->setFocusPolicy(Qt::NoFocus);

@@ -41,6 +41,14 @@ PreviewPane::PreviewPane(QWidget* parent) : QWidget(parent) {
     // Allow mouse selection without taking keyboard focus
     m_textLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     m_textLabel->setFocusPolicy(Qt::NoFocus);
+    // Make preview content text slightly smaller than default
+    {
+        QFont f = m_textLabel->font();
+        if (f.pointSizeF() > 0) f.setPointSizeF(std::max(1.0, f.pointSizeF() - 1));
+        else if (f.pointSize() > 0) f.setPointSize(std::max(1, f.pointSize() - 1));
+        else if (f.pixelSize() > 0) f.setPixelSize(std::max(8, f.pixelSize() - 1));
+        m_textLabel->setFont(f);
+    }
     m_textLabel->setVisible(false);
     v->addWidget(m_textLabel, 1);
 

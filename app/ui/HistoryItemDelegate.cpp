@@ -36,21 +36,33 @@ void HistoryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, co
     initStyleOption(&option, idx);
     const QWidget* w = option.widget;
     QStyle* style = w ? w->style() : QApplication::style();
-    // Custom background with rounded hover/selection capsule
+    // Custom background with subtle, square-corner hover/selection fill
     p->save();
     p->setRenderHint(QPainter::Antialiasing, true);
     QRect bgRect = option.rect.adjusted(6, 2, -6, -2);
-    const qreal radius = 6.0;
     if (option.state & QStyle::State_Selected) {
-        p->setBrush(option.palette.highlight());
+        // Mix highlight with base to get a lighter selection background
+        const QColor hi = option.palette.highlight().color();
+        const QColor base = option.palette.base().color();
+        auto mix = [](const QColor& a, const QColor& b, qreal ar){
+            qreal br = 1.0 - ar;
+            return QColor::fromRgb(
+                qBound(0, int(a.red()   * ar + b.red()   * br), 255),
+                qBound(0, int(a.green() * ar + b.green() * br), 255),
+                qBound(0, int(a.blue()  * ar + b.blue()  * br), 255)
+            );
+        };
+        QColor sel = mix(hi, base, 0.60); // deepen selection: 40% highlight over base
+        sel.setAlpha(255); // solid fill, already lightened by mix
+        p->setBrush(sel);
         p->setPen(Qt::NoPen);
-        p->drawRoundedRect(bgRect, radius, radius);
+        p->fillRect(bgRect, sel);
     } else if (option.state & QStyle::State_MouseOver) {
         QColor hov = option.palette.highlight().color();
-        hov.setAlpha(28);
+        hov.setAlpha(40); // very subtle hover
         p->setBrush(hov);
         p->setPen(Qt::NoPen);
-        p->drawRoundedRect(bgRect, radius, radius);
+        p->fillRect(bgRect, hov);
     } else {
         // default panel background
         style->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, p, w);
@@ -65,9 +77,8 @@ void HistoryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, co
     if (type == "image") {
         QPixmap thumb = loadThumb(idx, iconSize);
         QRect imgRect(r.left(), r.top(), iconSize, iconSize);
-        // Rounded thumb background
-        QPainterPath path; path.addRoundedRect(imgRect, 4, 4);
-        p->setClipPath(path);
+        // Square corners for thumbnails (no rounding)
+        p->setClipping(false);
         if (!thumb.isNull()) {
             p->drawPixmap(imgRect, thumb);
         } else {
