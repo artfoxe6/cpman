@@ -51,6 +51,8 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     m_search->setPlaceholderText(QStringLiteral("搜索…"));
     m_useDb = new QCheckBox(QStringLiteral("数据库"));
     m_onlyFav = new QCheckBox(QStringLiteral("收藏列表"));
+    // Route focus of the popup to the search box whenever the window itself gains focus
+    setFocusProxy(m_search);
     // Control appearance tweaks
     auto applyUi = [this]{
         m_search->setClearButtonEnabled(true);
@@ -114,6 +116,9 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     m_list->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_list->setMouseTracking(true);
     m_list->setSpacing(2);
+    // Keep keyboard focus on the search box: prevent the list from stealing focus on click
+    m_list->setFocusPolicy(Qt::NoFocus);
+    if (m_list->viewport()) m_list->viewport()->setFocusPolicy(Qt::NoFocus);
     // Remove list frame border
     m_list->setFrameShape(QFrame::NoFrame);
     // Double-click on a history item commits just like pressing Enter
@@ -124,6 +129,13 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     m_previewScroll = new QScrollArea();
     m_previewScroll->setFrameShape(QFrame::NoFrame);
     m_preview = new PreviewPane();
+    // Do not allow preview widgets to take focus away from search
+    m_previewScroll->setFocusPolicy(Qt::NoFocus);
+    m_preview->setFocusPolicy(Qt::NoFocus);
+    if (m_previewScroll->viewport()) m_previewScroll->viewport()->setFocusPolicy(Qt::NoFocus);
+    // Also ensure scrollbars never take focus
+    if (m_previewScroll->horizontalScrollBar()) m_previewScroll->horizontalScrollBar()->setFocusPolicy(Qt::NoFocus);
+    if (m_previewScroll->verticalScrollBar()) m_previewScroll->verticalScrollBar()->setFocusPolicy(Qt::NoFocus);
     m_previewScroll->setWidget(m_preview);
     m_previewScroll->setWidgetResizable(true);
     // Heart button is placed within PreviewPane's top bar layout; no floating reparenting needed.
@@ -131,8 +143,20 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     bottom->addWidget(m_previewScroll, 1);
     v->addLayout(bottom, 1);
 
+    // Strong focus on search; all other interactive widgets are NoFocus
+    m_search->setFocusPolicy(Qt::StrongFocus);
+    m_useDb->setFocusPolicy(Qt::NoFocus);
+    m_onlyFav->setFocusPolicy(Qt::NoFocus);
+
     m_search->installEventFilter(this);
     m_list->installEventFilter(this);
+    // Guard preview region clicks from stealing focus
+    m_preview->installEventFilter(this);
+    m_previewScroll->installEventFilter(this);
+    if (m_previewScroll->viewport()) m_previewScroll->viewport()->installEventFilter(this);
+    // Install on existing children (labels) as well
+    const auto previewChildren = m_preview->findChildren<QObject*>();
+    for (QObject* c : previewChildren) c->installEventFilter(this);
     // Capture mouse for dragging on container area
     m_container->installEventFilter(this);
 
@@ -141,6 +165,31 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     });
     connect(m_useDb, &QCheckBox::toggled, this, [this]{ emit requestSearch(m_search->text(), m_useDb->isChecked(), m_onlyFav->isChecked()); });
     connect(m_onlyFav, &QCheckBox::toggled, this, [this]{ emit requestSearch(m_search->text(), m_useDb->isChecked(), m_onlyFav->isChecked()); });
+
+    // Keep focus anchored on the search field while the popup is visible/active
+    QObject::connect(qApp, &QApplication::focusChanged, this,
+                     [this](QWidget* /*old*/, QWidget* now){
+        if (!this->isVisible() || !this->isActiveWindow()) return;
+        // Avoid redundant setFocus if already focused
+        if (qApp->focusWidget() == m_search) return;
+        // Only intervene when focus is cleared or moved to this popup's non-focusable children
+        bool shouldRefocus = false;
+        if (!now) {
+            shouldRefocus = true;
+        } else if ((now == this) || this->isAncestorOf(now)) {
+            // Never allow preview subtree (including scrollbars) to keep focus
+            const bool inPreview = (now == m_preview) || (now == m_previewScroll) ||
+                                   (m_preview && m_preview->isAncestorOf(now)) ||
+                                   (m_previewScroll && (m_previewScroll->isAncestorOf(now) ||
+                                     now == m_previewScroll->verticalScrollBar() || now == m_previewScroll->horizontalScrollBar()));
+            if (inPreview) shouldRefocus = true;
+            // Also reclaim if the target child doesn't accept focus
+            else if (now != m_search && now->focusPolicy() == Qt::NoFocus) shouldRefocus = true;
+        }
+        if (shouldRefocus && m_search) {
+            QTimer::singleShot(0, [this]{ if (isVisible() && isActiveWindow()) m_search->setFocus(Qt::OtherFocusReason); });
+        }
+    });
 }
 
 void MainPopup::showPopup() {
@@ -210,6 +259,8 @@ bool MainPopup::eventFilter(QObject* obj, QEvent* ev) {
             if (me->button() == Qt::LeftButton) {
                 m_dragging = true;
                 m_dragOffset = me->globalPosition().toPoint() - frameGeometry().topLeft();
+                // Ensure search retains focus even when clicking empty container space (defer to avoid churn)
+                if (m_search) QTimer::singleShot(0, [this]{ if (isVisible()) m_search->setFocus(Qt::MouseFocusReason); });
                 return true;
             }
         } else if (ev->type() == QEvent::MouseMove) {
@@ -221,6 +272,18 @@ bool MainPopup::eventFilter(QObject* obj, QEvent* ev) {
         } else if (ev->type() == QEvent::MouseButtonRelease) {
             m_dragging = false;
         }
+    }
+    if (obj == m_list && ev->type() == QEvent::MouseButtonPress) {
+        // Clicking the list should not steal focus; keep it on the search box
+        if (m_search) QTimer::singleShot(0, [this]{ if (isVisible()) m_search->setFocus(Qt::MouseFocusReason); });
+        // Do not consume the event so selection still updates
+        return QWidget::eventFilter(obj, ev);
+    }
+    if ((obj == m_preview || obj == m_previewScroll || obj == (m_previewScroll ? m_previewScroll->viewport() : nullptr))
+        && ev->type() == QEvent::MouseButtonPress) {
+        // Clicking preview area should not steal focus either
+        if (m_search) QTimer::singleShot(0, [this]{ if (isVisible()) m_search->setFocus(Qt::MouseFocusReason); });
+        return QWidget::eventFilter(obj, ev);
     }
     if ((obj == m_search || obj == m_list) && ev->type() == QEvent::KeyPress) {
         auto* ke = static_cast<QKeyEvent*>(ev);
@@ -353,6 +416,7 @@ void MainPopup::mousePressEvent(QMouseEvent* e) {
     if (e->button() == Qt::LeftButton) {
         m_dragging = true;
         m_dragOffset = e->globalPosition().toPoint() - frameGeometry().topLeft();
+        if (m_search) m_search->setFocus(Qt::MouseFocusReason);
         e->accept();
     } else {
         QWidget::mousePressEvent(e);

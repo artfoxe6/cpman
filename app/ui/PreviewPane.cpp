@@ -30,11 +30,14 @@ PreviewPane::PreviewPane(QWidget* parent) : QWidget(parent) {
 
     m_textLabel = new QLabel();
     m_textLabel->setWordWrap(true);
-    m_textLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+    // Allow mouse selection without taking keyboard focus
+    m_textLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    m_textLabel->setFocusPolicy(Qt::NoFocus);
     m_textLabel->setVisible(false);
     v->addWidget(m_textLabel, 1);
 
     m_imageLabel = new QLabel();
+    m_imageLabel->setFocusPolicy(Qt::NoFocus);
     m_imageLabel->setVisible(false);
     m_imageLabel->installEventFilter(this);
     m_imageLabel->setAlignment(Qt::AlignTop | Qt::AlignLeft);
@@ -45,6 +48,8 @@ PreviewPane::PreviewPane(QWidget* parent) : QWidget(parent) {
     m_heart->setObjectName("previewHeart");
     m_heart->setFlat(true);
     m_heart->setCursor(Qt::PointingHandCursor);
+    // Keep popup's keyboard focus on the search box
+    m_heart->setFocusPolicy(Qt::NoFocus);
     m_heart->setToolTip(QStringLiteral("切换收藏 (Ctrl/⌘+D)"));
     // Keep square button to avoid icon squashing
     m_heart->setStyleSheet("QPushButton{background:transparent;border:none;padding:4px;} QPushButton:hover{background:rgba(127,127,127,0.12);border-radius:6px;}");
