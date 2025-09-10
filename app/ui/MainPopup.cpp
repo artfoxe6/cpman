@@ -31,8 +31,16 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     auto* outer = new QVBoxLayout(this);
     outer->setContentsMargins(12, 12, 12, 12);
     m_container = new QWidget(this);
-    // Rounded background that follows palette, no border
+    // Rounded background that follows our custom palette window color, no border
     m_container->setStyleSheet("background: palette(window); border-radius: 5px;");
+    // Apply initial theme-specific background color to container
+    {
+        const auto scheme = Theme::effectiveScheme(nullptr);
+        QPalette pal = m_container->palette();
+        pal.setColor(QPalette::Window, Theme::popupWindowColor(scheme));
+        m_container->setAutoFillBackground(true);
+        m_container->setPalette(pal);
+    }
     auto* v = new QVBoxLayout(m_container);
     v->setContentsMargins(10, 10, 10, 10);
     outer->addWidget(m_container);
@@ -101,8 +109,15 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     // React to theme change (for potential palette changes in styles)
 #if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
     // Defer UI restyle until after Qt has finished updating the palette
-    QObject::connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, this, [applyUi, updateTopIcons]{
-        QTimer::singleShot(0, [applyUi, updateTopIcons]{ applyUi(); updateTopIcons(); });
+    QObject::connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, this, [this, applyUi, updateTopIcons]{
+        QTimer::singleShot(0, [this, applyUi, updateTopIcons]{
+            applyUi(); updateTopIcons();
+            // Update background color with new scheme
+            const auto scheme = Theme::effectiveScheme(nullptr);
+            QPalette pal = m_container->palette();
+            pal.setColor(QPalette::Window, Theme::popupWindowColor(scheme));
+            m_container->setPalette(pal);
+        });
     });
 #endif
     top->addWidget(m_search, 1);

@@ -5,6 +5,9 @@
 #include <QStyle>
 #include <QFileInfo>
 #include <QPainterPath>
+#include <QGuiApplication>
+#include <QStyleHints>
+#include "Theme.h"
 
 // Role constants mirror HistoryListModel
 static constexpr int RoleId = Qt::UserRole + 1;
@@ -41,19 +44,13 @@ void HistoryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, co
     p->setRenderHint(QPainter::Antialiasing, true);
     QRect bgRect = option.rect.adjusted(6, 2, -6, -2);
     if (option.state & QStyle::State_Selected) {
-        // Mix highlight with base to get a lighter selection background
-        const QColor hi = option.palette.highlight().color();
-        const QColor base = option.palette.base().color();
-        auto mix = [](const QColor& a, const QColor& b, qreal ar){
-            qreal br = 1.0 - ar;
-            return QColor::fromRgb(
-                qBound(0, int(a.red()   * ar + b.red()   * br), 255),
-                qBound(0, int(a.green() * ar + b.green() * br), 255),
-                qBound(0, int(a.blue()  * ar + b.blue()  * br), 255)
-            );
-        };
-        QColor sel = mix(hi, base, 0.60); // deepen selection: 40% highlight over base
-        sel.setAlpha(255); // solid fill, already lightened by mix
+        // Exact selection color per theme
+#if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
+        const auto scheme = QGuiApplication::styleHints()->colorScheme();
+#else
+        const auto scheme = Qt::ColorScheme::Light;
+#endif
+        const QColor sel = Theme::listSelectionColor(scheme);
         p->setBrush(sel);
         p->setPen(Qt::NoPen);
         p->fillRect(bgRect, sel);
@@ -91,8 +88,9 @@ void HistoryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, co
         QString base = QFileInfo(idx.data(RoleMediaPath).toString()).fileName();
         if (base.isEmpty()) base = QStringLiteral("图片");
         const QString label = base;
+        // Ensure readable text; force white over custom selection color
         p->setPen((option.state & QStyle::State_Selected)
-                      ? option.palette.highlightedText().color()
+                      ? QColor(Qt::white)
                       : option.palette.color(QPalette::Text));
         p->drawText(textRect, Qt::AlignVCenter | Qt::TextSingleLine,
                     fm.elidedText(label, Qt::ElideRight, textRect.width()));
@@ -103,7 +101,7 @@ void HistoryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt, co
         QFontMetrics fm(f);
         QRect textRect = r;
         p->setPen((option.state & QStyle::State_Selected)
-                      ? option.palette.highlightedText().color()
+                      ? QColor(Qt::white)
                       : option.palette.color(QPalette::Text));
         // Single line elided for performance and clarity
         QString el = fm.elidedText(text, Qt::ElideRight, textRect.width());

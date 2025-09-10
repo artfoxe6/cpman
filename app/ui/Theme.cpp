@@ -7,6 +7,7 @@
 #include <QStyle>
 #include <QApplication>
 #include <QPalette>
+#include <QColor>
 
 namespace Theme {
 
@@ -46,6 +47,18 @@ void refreshStyleAfterThemeChange() {
         inFlight = false;
     });
 #endif
+}
+
+QColor popupWindowColor(Qt::ColorScheme scheme) {
+    // Light: 0xDFDFDF, Dark: 0x070707
+    if (scheme == Qt::ColorScheme::Dark) return QColor(0x07, 0x07, 0x07);
+    return QColor(0xDF, 0xDF, 0xDF);
+}
+
+QColor listSelectionColor(Qt::ColorScheme scheme) {
+    // Light: 0x521E72, Dark: 0x4A7F87
+    if (scheme == Qt::ColorScheme::Dark) return QColor(0x4A, 0x7F, 0x87);
+    return QColor(0x52, 0x1E, 0x72);
 }
 
 }
