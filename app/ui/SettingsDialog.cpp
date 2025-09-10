@@ -113,7 +113,7 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
 
     // Wayland note and repo link
     v->addWidget(new QLabel(QStringLiteral("Wayland 环境下自动粘贴需 wtype/ydotool，缺失时仅复制不粘贴。")));
-    auto* btnRepo = new QPushButton(QStringLiteral("打开开源地址"));
+    auto* btnRepo = new QPushButton(QStringLiteral("项目主页"));
     v->addWidget(btnRepo);
 
     auto* box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -127,7 +127,7 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
     connect(spDelay, qOverload<int>(&QSpinBox::valueChanged), this, [this](int ms){ emit pasteDelayChanged(ms); });
     connect(spPreload, qOverload<int>(&QSpinBox::valueChanged), this, [this](int n){ emit preloadChanged(n); });
     connect(btnClean, &QPushButton::clicked, this, [this, spDays, spUsageSkip]{ emit cleanupRequested(spDays->value(), spUsageSkip->value()); });
-    connect(btnRepo, &QPushButton::clicked, this, []{ QDesktopServices::openUrl(QUrl("https://github.com/xxxx/xxxx")); });
+    connect(btnRepo, &QPushButton::clicked, this, []{ QDesktopServices::openUrl(QUrl("https://github.com/artfoxe6/cpman")); });
     // Open storage directories
     connect(btnOpenDbDir, &QPushButton::clicked, this, [base]{
         // Ensure base dir exists and open its location (DB directory)
