@@ -1,0 +1,67 @@
+{
+    "app-id": "com.cpman.app",
+    "runtime": "org.freedesktop.Platform",
+    "runtime-version": "23.08",
+    "sdk": "org.freedesktop.Sdk",
+    "command": "cpman",
+    "finish-args": [
+        "--share=ipc",
+        "--socket=x11",
+        "--socket=wayland",
+        "--device=dri",
+        "--talk-name=org.freedesktop.Notifications",
+        "--system-talk-name=org.freedesktop.login1",
+        "--persist=.config/cpman"
+    ],
+    "modules": [
+        {
+            "name": "qt6",
+            "buildsystem": "cmake",
+            "config-opts": [
+                "-DCMAKE_BUILD_TYPE=Release",
+                "-DFEATURE_gui=ON",
+                "-DFEATURE_widgets=ON",
+                "-DFEATURE_sql=ON",
+                "-DFEATURE_network=ON"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://download.qt.io/official_releases/qt/6.5/6.5.0/submodules/qtbase-everywhere-src-6.5.0.tar.xz",
+                    "sha256": "qt6-base-sha256-hash-goes-here"
+                }
+            ]
+        },
+        {
+            "name": "qhotkey",
+            "buildsystem": "cmake",
+            "sources": [
+                {
+                    "type": "git",
+                    "url": "https://github.com/Skycoder42/QHotkey.git",
+                    "tag": "v1.5.0"
+                }
+            ]
+        },
+        {
+            "name": "cpman",
+            "buildsystem": "cmake",
+            "config-opts": [
+                "-DCMAKE_BUILD_TYPE=Release",
+                "-DHAVE_QHOTKEY=ON"
+            ],
+            "sources": [
+                {
+                    "type": "dir",
+                    "path": ".."
+                }
+            ],
+            "post-install": [
+                "install -Dm755 cpman /app/bin/cpman",
+                "install -Dm644 app/icons/linux/256x256/apps/cpman.png /app/share/icons/hicolor/256x256/apps/cpman.png",
+                "install -Dm644 flatpak/com.cpman.app.desktop /app/share/applications/com.cpman.app.desktop",
+                "install -Dm644 flatpak/com.cpman.app.metainfo.xml /app/share/metainfo/com.cpman.app.metainfo.xml"
+            ]
+        }
+    ]
+}

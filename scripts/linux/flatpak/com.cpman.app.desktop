@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=cpman
+Comment=Cross-platform clipboard history manager
+Exec=cpman
+Icon=cpman
+Type=Application
+Categories=Utility;
+StartupNotify=false
+Terminal=false

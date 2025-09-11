@@ -137,5 +137,10 @@ if(APPLE)
     MACOSX_BUNDLE_BUNDLE_VERSION "0.1.0"
     MACOSX_BUNDLE_SHORT_VERSION_STRING "0.1.0"
     MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/macos/Info.plist.in"
+    MACOSX_BUNDLE_ICON_FILE "cpman.icns"
   )
+  
+  # Copy icon file to app bundle
+  set_source_files_properties(macos/cpman.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+  target_sources(cpman PRIVATE macos/cpman.icns)
 endif()

@@ -1,0 +1,160 @@
+{
+	"BUILD_DIR" : "/opt/code/cx/cpman/build-macos/app/third_party/QHotkey-build/qhotkey_autogen",
+	"CMAKE_BINARY_DIR" : "/opt/code/cx/cpman/build-macos",
+	"CMAKE_CURRENT_BINARY_DIR" : "/opt/code/cx/cpman/build-macos/app/third_party/QHotkey-build",
+	"CMAKE_CURRENT_SOURCE_DIR" : "/opt/code/cx/cpman/third_party/QHotkey",
+	"CMAKE_EXECUTABLE" : "/opt/homebrew/bin/cmake",
+	"CMAKE_LIST_FILES" : 
+	[
+		"/opt/code/cx/cpman/third_party/QHotkey/CMakeLists.txt",
+		"/opt/homebrew/opt/qt/lib/cmake/Qt6/Qt6ConfigVersion.cmake",
+		"/opt/homebrew/opt/qt/lib/cmake/Qt6/Qt6ConfigVersionImpl.cmake",
+		"/opt/homebrew/opt/qt/lib/cmake/Qt6/Qt6Config.cmake",
+		"/opt/homebrew/opt/qt/lib/cmake/Qt6/QtPublicCMakeEarlyPolicyHelpers.cmake",
+		"/opt/homebrew/opt/qt/lib/cmake/Qt6/Qt6ConfigExtras.cmake",
+		"/opt/homebrew/opt/qt/lib/cmake/Qt6/QtPublicCMakeVersionHelpers.cmake",
+		"/opt/homebrew/opt/qt/lib/cmake/Qt6/QtPublicCMakeHelpers.cmake",
+		"/opt/homebrew/opt/qt/lib/cmake/Qt6/QtInstallPaths.cmake",
+		"/opt/homebrew/opt/qt/lib/cmake/Qt6/Qt6Targets.cmake",
+		"/opt/homebrew/opt/qt/lib/cmake/Qt6/Qt6VersionlessAliasTargets.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtFeature.cmake",
+		"/opt/homebrew/share/cmake/Modules/CheckCXXCompilerFlag.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtFeatureCommon.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicAndroidHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicAppleHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicCMakeHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicCMakeVersionHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicDependencyHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicExternalProjectHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicFinalizerHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicFindPackageHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicGitHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicPluginHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicPluginHelpers_v2.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicSbomAttributionHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicSbomCpeHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicSbomDepHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicSbomFileHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicSbomGenerationHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicSbomHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicSbomLicenseHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicSbomOpsHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicSbomPurlHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicSbomPythonHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicSbomQtEntityHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicSbomSystemDepHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicTargetHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicTestHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicToolHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicWalkLibsHelpers.cmake",
+		"/opt/homebrew/Cellar/qt/6.9.2/lib/cmake/Qt6/QtPublicWindowsHelpers.cmake",
+		"/opt/homebrew/share/cmake/Modules/CMakeFindDependencyMacro.cmake",
+		"/opt/homebrew/opt/qt/lib/cmake/Qt6/Qt6Dependencies.cmake",
+		"/opt/homebrew/share/cmake/Modules/CPack.cmake",
+		"/opt/homebrew/share/cmake/Modules/CPackComponent.cmake",
+		"/opt/homebrew/share/cmake/Templates/CPackConfig.cmake.in",
+		"/opt/homebrew/share/cmake/Templates/CPackConfig.cmake.in",
+		"/opt/homebrew/share/cmake/Modules/GNUInstallDirs.cmake",
+		"/opt/homebrew/share/cmake/Modules/CMakePackageConfigHelpers.cmake",
+		"/opt/homebrew/share/cmake/Modules/WriteBasicConfigVersionFile.cmake",
+		"/opt/homebrew/share/cmake/Modules/BasicConfigVersion-AnyNewerVersion.cmake.in"
+	],
+	"CMAKE_SOURCE_DIR" : "/opt/code/cx/cpman",
+	"CROSS_CONFIG" : false,
+	"DEP_FILE" : "/opt/code/cx/cpman/build-macos/app/third_party/QHotkey-build/qhotkey_autogen/deps",
+	"DEP_FILE_RULE_NAME" : "qhotkey_autogen/timestamp",
+	"HEADERS" : 
+	[
+		[
+			"/opt/code/cx/cpman/third_party/QHotkey/QHotkey/qhotkey.h",
+			"Mu",
+			"CDZSFYPHEU/moc_qhotkey.cpp",
+			null
+		],
+		[
+			"/opt/code/cx/cpman/third_party/QHotkey/QHotkey/qhotkey_p.h",
+			"Mu",
+			"CDZSFYPHEU/moc_qhotkey_p.cpp",
+			null
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "/opt/code/cx/cpman/build-macos/app/third_party/QHotkey-build/qhotkey_autogen/include",
+	"MOC_COMPILATION_FILE" : "/opt/code/cx/cpman/build-macos/app/third_party/QHotkey-build/qhotkey_autogen/mocs_compilation.cpp",
+	"MOC_DEFINITIONS" : 
+	[
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NO_DEBUG",
+		"QT_NO_SIGNALS_SLOTS_KEYWORDS"
+	],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"/opt/code/cx/cpman/third_party/QHotkey/QHotkey",
+		"/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/Carbon.framework",
+		"/opt/homebrew/opt/qt/lib/QtCore.framework/Headers",
+		"/opt/homebrew/opt/qt/lib/QtCore.framework",
+		"/opt/homebrew/opt/qt/share/qt/mkspecs/macx-clang",
+		"/opt/homebrew/opt/qt/include",
+		"/opt/homebrew/opt/qt/lib/QtGui.framework/Headers",
+		"/opt/homebrew/opt/qt/lib/QtGui.framework",
+		"/usr/local/include",
+		"/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1",
+		"/Library/Developer/CommandLineTools/usr/lib/clang/17/include",
+		"/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include",
+		"/Library/Developer/CommandLineTools/usr/include"
+	],
+	"MOC_MACRO_NAMES" : 
+	[
+		"Q_OBJECT",
+		"Q_GADGET",
+		"Q_NAMESPACE",
+		"Q_NAMESPACE_EXPORT",
+		"Q_GADGET_EXPORT",
+		"Q_ENUM_NS"
+	],
+	"MOC_OPTIONS" : [],
+	"MOC_PATH_PREFIX" : false,
+	"MOC_PREDEFS_CMD" : 
+	[
+		"/usr/bin/c++",
+		"-std=gnu++17",
+		"-w",
+		"-dM",
+		"-E",
+		"/opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp"
+	],
+	"MOC_PREDEFS_FILE" : "/opt/code/cx/cpman/build-macos/app/third_party/QHotkey-build/qhotkey_autogen/moc_predefs.h",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : [],
+	"MULTI_CONFIG" : false,
+	"PARALLEL" : 10,
+	"PARSE_CACHE_FILE" : "/opt/code/cx/cpman/build-macos/app/third_party/QHotkey-build/CMakeFiles/qhotkey_autogen.dir/ParseCache.txt",
+	"QT_MOC_EXECUTABLE" : "/opt/homebrew/opt/qt/share/qt/libexec/moc",
+	"QT_UIC_EXECUTABLE" : "",
+	"QT_VERSION_MAJOR" : 6,
+	"QT_VERSION_MINOR" : 9,
+	"SETTINGS_FILE" : "/opt/code/cx/cpman/build-macos/app/third_party/QHotkey-build/CMakeFiles/qhotkey_autogen.dir/AutogenUsed.txt",
+	"SOURCES" : 
+	[
+		[
+			"/opt/code/cx/cpman/third_party/QHotkey/QHotkey/qhotkey.cpp",
+			"Mu",
+			null
+		],
+		[
+			"/opt/code/cx/cpman/third_party/QHotkey/QHotkey/qhotkey_mac.cpp",
+			"Mu",
+			null
+		]
+	],
+	"USE_BETTER_GRAPH" : true,
+	"VERBOSITY" : 0
+}

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.cpman.app</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>cpman</name>
+  <summary>Cross-platform clipboard history manager</summary>
+  <description>
+    <p>
+      cpman is a cross-platform clipboard history manager that runs on Windows, macOS, and Linux.
+      It provides a simple way to manage your clipboard history with features like:
+    </p>
+    <ul>
+      <li>System tray integration</li>
+      <li>Global hotkey support</li>
+      <li>Text and image clipboard history</li>
+      <li>Search and filtering</li>
+      <li>Favorite items</li>
+      <li>Dark/light theme support</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">cpman.desktop</launchable>
+  <url type="homepage">https://github.com/xxxx/xxxx</url>
+  <url type="bugtracker">https://github.com/xxxx/xxxx/issues</url>
+  <provides>
+    <binary>cpman</binary>
+  </provides>
+  <releases>
+    <release version="0.1.0" date="2024-01-01"/>
+  </releases>
+</component>
