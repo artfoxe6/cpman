@@ -21,8 +21,10 @@
 #include <QFrame>
 #include <QAction>
 #include "HistoryListModel.h"
+#include <QPixmapCache>
 
 MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
+    QPixmapCache::setCacheLimit(65536); // ~64MB for preview images
     setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     // Enable translucent background for drop shadow around rounded container
     setAttribute(Qt::WA_TranslucentBackground, true);
@@ -415,7 +417,16 @@ void MainPopup::updatePreviewFromIndex(const QModelIndex& idx) {
     } else {
         const QString path = idx.data(Qt::UserRole + 4).toString(); // MediaPathRole
         QImage img(path);
-        if (!img.isNull()) m_preview->showImage(id, img, fav, usage, appName);
+        if (!img.isNull()) {
+            int w = m_previewScroll && m_previewScroll->viewport() ? m_previewScroll->viewport()->width() : m_preview->width();
+            QString key = QString::number(id) + ":" + QString::number(w);
+            QPixmap cached;
+            if (QPixmapCache::find(key, &cached)) {
+                m_preview->showImage(id, img, fav, usage, appName, cached);
+            } else {
+                m_preview->showImage(id, img, fav, usage, appName);
+            }
+        }
     }
 }
 

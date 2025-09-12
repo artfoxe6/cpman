@@ -13,6 +13,9 @@
 #include <QTimer>
 #include <QPalette>
 #include <QColor>
+#include <QPixmapCache>
+#include <QtConcurrent>
+#include <QFutureWatcher>
 #include "Theme.h"
 #include "../core/Settings.h"
 
@@ -125,19 +128,28 @@ void PreviewPane::showText(qint64 id, const QString& text, bool favorite, int us
     updateUsageLabel();
 }
 
-void PreviewPane::showImage(qint64 id, const QImage& img, bool favorite, int usageCount, const QString& appName) {
+void PreviewPane::showImage(qint64 id, const QImage& img, bool favorite, int usageCount,
+                            const QString& appName, const QPixmap& scaled) {
     m_id = id; m_favorite = favorite; m_isImage = true; m_fitToWidth = true; m_usageCount = usageCount; m_appName = appName;
     m_imageOrig = QPixmap::fromImage(img);
     m_imageLabel->setVisible(true);
     m_textLabel->setVisible(false);
     m_heart->setVisible(true);
-    updateImageDisplay();
+    if (!scaled.isNull()) {
+        m_imageLabel->setPixmap(scaled);
+    } else {
+        updateImageDisplay();
+    }
     updateScaleLabel();
     updateHeart();
     m_sourceLabel->setVisible(!m_appName.trimmed().isEmpty());
     updateSourceLabel();
     m_usageLabel->setVisible(true);
     updateUsageLabel();
+}
+
+void PreviewPane::setScaledPixmap(const QPixmap& pix) {
+    if (!pix.isNull()) m_imageLabel->setPixmap(pix);
 }
 
 bool PreviewPane::eventFilter(QObject* obj, QEvent* ev) {
@@ -197,12 +209,27 @@ void PreviewPane::updateImageDisplay() {
         if (m_contentScroll && m_contentScroll->viewport())
             w = m_contentScroll->viewport()->width();
         if (w < 1) w = 1;
-        {
-            QPixmap cur = m_imageLabel->pixmap();
-            if (!cur.isNull() && cur.width() == w) return;
+        const QString key = QString::number(m_id) + ":" + QString::number(w);
+        QPixmap cached;
+        if (QPixmapCache::find(key, &cached)) {
+            m_imageLabel->setPixmap(cached);
+            return;
         }
-        QPixmap scaled = m_imageOrig.scaledToWidth(w, Qt::SmoothTransformation);
-        m_imageLabel->setPixmap(scaled);
+        // Show a quick placeholder using fast transformation
+        QPixmap fast = m_imageOrig.scaledToWidth(w, Qt::FastTransformation);
+        m_imageLabel->setPixmap(fast);
+        qint64 currentId = m_id;
+        auto future = QtConcurrent::run([orig = m_imageOrig, w]{
+            return orig.scaledToWidth(w, Qt::SmoothTransformation);
+        });
+        auto* watcher = new QFutureWatcher<QPixmap>(this);
+        connect(watcher, &QFutureWatcher<QPixmap>::finished, this, [this, watcher, key, currentId]{
+            QPixmap pix = watcher->result();
+            QPixmapCache::insert(key, pix);
+            if (m_id == currentId && m_fitToWidth) m_imageLabel->setPixmap(pix);
+            watcher->deleteLater();
+        });
+        watcher->setFuture(future);
     } else {
         // Only update if different to avoid resize loops
         {
