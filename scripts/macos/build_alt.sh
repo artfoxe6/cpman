@@ -12,6 +12,17 @@ echo "Building cpman for macOS..."
 echo "Project directory: $PROJECT_DIR"
 echo "Build directory: $BUILD_DIR"
 
+# Ensure Qt6 is installed
+if ! command -v qmake >/dev/null 2>&1 || ! qmake -query QT_VERSION 2>/dev/null | grep -q '^6'; then
+    echo "Qt6 not found, attempting to install via Homebrew..."
+    if command -v brew >/dev/null 2>&1; then
+        brew install qt
+    else
+        echo "Homebrew not found. Please install Homebrew and Qt6 manually."
+        exit 1
+    fi
+fi
+
 # Clean and create build directory
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
