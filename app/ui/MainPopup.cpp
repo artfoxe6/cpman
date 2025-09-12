@@ -242,6 +242,7 @@ void MainPopup::showPopup() {
     if (m_preview) {
         m_preview->clear();
     }
+    m_currentItemId = 0;
     // Also clear any previous search input when reopening
     if (m_search) {
         // Only trigger clear if non-empty to avoid redundant signals
@@ -368,33 +369,16 @@ void MainPopup::setListModel(QAbstractItemModel* model) {
         connect(m_list->selectionModel(), &QItemSelectionModel::currentChanged,
                 this, [this](const QModelIndex& current, const QModelIndex&){ updatePreviewFromIndex(current); });
     }
-    // Keep preview empty and no selection after searches/model resets
+    // Keep preview empty and clear selection after searches/model resets
     if (model) {
         connect(model, &QAbstractItemModel::modelReset, this, [this]{
-            // Try to restore selection to previously selected item by id.
-            // If not found (e.g., filtered out), clear selection and preview.
             if (!m_list) return;
-            int rows = m_list->model() ? m_list->model()->rowCount() : 0;
-            QModelIndex restoreIdx;
-            if (m_currentItemId > 0 && rows > 0) {
-                for (int r = 0; r < rows; ++r) {
-                    const QModelIndex idx = m_list->model()->index(r, 0);
-                    const qint64 id = idx.data(Qt::UserRole + 1).toLongLong(); // IdRole
-                    if (id == m_currentItemId) { restoreIdx = idx; break; }
-                }
+            m_list->clearSelection();
+            m_list->setCurrentIndex(QModelIndex());
+            if (m_preview) {
+                m_preview->clear();
             }
-            if (restoreIdx.isValid()) {
-                m_list->setCurrentIndex(restoreIdx);
-                // Explicitly refresh preview with restored index
-                updatePreviewFromIndex(restoreIdx);
-            } else {
-                m_list->clearSelection();
-                m_list->setCurrentIndex(QModelIndex());
-                if (m_preview) {
-                    m_preview->clear();
-                }
-                m_currentItemId = 0;
-            }
+            m_currentItemId = 0;
         });
     }
 }
