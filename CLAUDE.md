@@ -106,7 +106,7 @@
 
 - **结果顺序**：`created_at DESC`。
 
-- **预期规模**：内存预加载默认 1000（可配置 200~5000）；数据库可无限。
+- **预期规模**：内存预加载默认 1000（可配置 1~5000）；数据库可无限。
 
 ---
 
@@ -244,7 +244,7 @@ resources.qrc             // 图标（light/dark）、样式资源
 
 - `paste/auto`: `true`（Wayland 默认 `false` 亦可，视实现）
 
-- `preload/count`: `1000`（范围 200~5000）
+- `preload/count`: `1000`（范围 1~5000）
 
 - `capture/allowRepeat`: `false`（是否允许连续重复）
 

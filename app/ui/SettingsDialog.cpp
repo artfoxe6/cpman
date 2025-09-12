@@ -45,9 +45,9 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
 
     // Preload count
     auto* preRow = new QHBoxLayout();
-    preRow->addWidget(new QLabel(QStringLiteral("预加载条数 (200-5000):")));
+    preRow->addWidget(new QLabel(QStringLiteral("预加载条数 (1-5000):")));
     auto* spPreload = new QSpinBox();
-    spPreload->setRange(200, 5000);
+    spPreload->setRange(1, 5000);
     spPreload->setValue(m_settings->preloadCount());
     preRow->addWidget(spPreload);
     v->addLayout(preRow);
