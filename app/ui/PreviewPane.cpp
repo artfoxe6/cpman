@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QScrollBar>
 #include <QMouseEvent>
 #include <QFont>
 #include <QGuiApplication>
@@ -191,14 +192,14 @@ void PreviewPane::updateImageDisplay() {
     // Manage scrollbars on the inner content scroll area only
     if (m_contentScroll) m_contentScroll->setHorizontalScrollBarPolicy(m_fitToWidth ? Qt::ScrollBarAlwaysOff : Qt::ScrollBarAsNeeded);
     if (m_fitToWidth) {
-        // Prefer the content scroll viewport width to avoid feedback resizing
-        int vpw = this->width();
-        if (m_contentScroll) vpw = m_contentScroll->viewport()->width();
-        int w = vpw;
+        // Use the viewport width directly to avoid oscillation from scrollbar visibility changes
+        int w = this->width();
+        if (m_contentScroll && m_contentScroll->viewport())
+            w = m_contentScroll->viewport()->width();
         if (w < 1) w = 1;
         {
             QPixmap cur = m_imageLabel->pixmap();
-            if (!cur.isNull() && qAbs(cur.width() - w) <= 1) return; // prevent thrashing growth
+            if (!cur.isNull() && cur.width() == w) return;
         }
         QPixmap scaled = m_imageOrig.scaledToWidth(w, Qt::SmoothTransformation);
         m_imageLabel->setPixmap(scaled);
