@@ -8,6 +8,7 @@
 #include <QGuiApplication>
 #include <QStyleHints>
 #include "Theme.h"
+#include "../core/ImageStore.h"
 
 // Role constants mirror HistoryListModel
 static constexpr int RoleId = Qt::UserRole + 1;
@@ -23,8 +24,13 @@ HistoryItemDelegate::HistoryItemDelegate(QObject* parent) : QStyledItemDelegate(
 QPixmap HistoryItemDelegate::loadThumb(const QModelIndex& index, int target) const {
     const qint64 id = index.data(RoleId).toLongLong();
     if (auto* c = m_thumbCache.object(id)) return *c;
-    const QString path = index.data(RoleMediaPath).toString();
-    QPixmap pm(path);
+
+    const QString mediaPath = index.data(RoleMediaPath).toString();
+    static ImageStore store; // for thumb path resolution
+    const QString thumbPath = store.thumbPathForMedia(mediaPath);
+
+    QPixmap pm(thumbPath);
+    if (pm.isNull()) pm.load(mediaPath);
     if (!pm.isNull()) {
         QPixmap scaled = pm.scaled(target, target, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         auto* heapPm = new QPixmap(scaled);
