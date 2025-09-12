@@ -25,9 +25,6 @@ public:
     bool allowRepeat() const;
     void setAllowRepeat(bool on);
 
-    QStringList blacklist() const;
-    void setBlacklist(const QStringList& list);
-
     QString themeMode() const; // system|light|dark
     void setThemeMode(const QString& mode);
 

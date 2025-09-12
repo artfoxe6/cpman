@@ -51,5 +51,3 @@ void TrayIcon::updateIcon() {
     const QString path = Theme::icon("tray", scheme);
     if (!path.isEmpty()) m_tray.setIcon(QIcon(path));
 }
-
-// removed: add-to-blacklist action and logic

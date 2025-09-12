@@ -5,7 +5,6 @@ static constexpr const char* KEY_AUTOPASTE = "paste/auto";
 static constexpr const char* KEY_PASTE_DELAY = "paste/delayMs";
 static constexpr const char* KEY_PRELOAD = "preload/count";
 static constexpr const char* KEY_ALLOW_REPEAT = "capture/allowRepeat";
-static constexpr const char* KEY_BLACKLIST = "privacy/blacklist";
 static constexpr const char* KEY_THEME = "theme/mode";
 static constexpr const char* KEY_POPUP_SIZE = "window/popupSize";
 
@@ -71,15 +70,6 @@ bool Settings::allowRepeat() const {
 
 void Settings::setAllowRepeat(bool on) {
     m_settings.setValue(KEY_ALLOW_REPEAT, on);
-    emit changed();
-}
-
-QStringList Settings::blacklist() const {
-    return m_settings.value(KEY_BLACKLIST, QStringList{}).toStringList();
-}
-
-void Settings::setBlacklist(const QStringList& list) {
-    m_settings.setValue(KEY_BLACKLIST, list);
     emit changed();
 }
 

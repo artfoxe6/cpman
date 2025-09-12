@@ -74,7 +74,6 @@ void ClipboardWatcher::onClipboardChanged() {
     if (AppInfo::foregroundApp(&appName, &pid)) {
         item.appName = appName;
         item.appPid = pid;
-        if (isBlacklisted(appName)) return; // skip capture
     }
 
     if (md->hasText()) {
@@ -131,15 +130,4 @@ void ClipboardWatcher::onClipboardChanged() {
         m_mem->addItem(item);
         emit itemCaptured(item);
     }
-}
-
-bool ClipboardWatcher::isBlacklisted(const QString& appName) const {
-    const auto patterns = m_settings->blacklist();
-    const QString lower = appName.toLower();
-    for (const auto& p : patterns) {
-        const QString t = p.trimmed();
-        if (t.isEmpty()) continue;
-        if (lower.contains(t.toLower())) return true;
-    }
-    return false;
 }
