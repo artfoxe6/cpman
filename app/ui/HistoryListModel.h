@@ -17,6 +17,9 @@ public:
     void setItems(const QVector<HistoryItem>& items);
     const QVector<HistoryItem>& items() const { return m_items; }
 
+public slots:
+    void onItemUpdated(const HistoryItem& item);
+
 private:
     QVector<HistoryItem> m_items;
 };

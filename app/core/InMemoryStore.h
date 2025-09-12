@@ -26,6 +26,7 @@ public:
 
 signals:
     void itemsChanged();
+    void itemUpdated(const HistoryItem& item);
 
 private:
     int m_capacity = 1000;

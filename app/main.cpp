@@ -71,6 +71,7 @@ int main(int argc, char* argv[]) {
     popup.attachSettings(&settings);
     HistoryListModel model;
     model.setItems(mem.items());
+    QObject::connect(&mem, &InMemoryStore::itemUpdated, &model, &HistoryListModel::onItemUpdated);
     popup.setListModel(&model);
     HistoryItemDelegate* delegate = new HistoryItemDelegate(&popup);
     // Assign via object name lookup; MainPopup exposes list indirectly; set via view pointer not public, so fetch child
