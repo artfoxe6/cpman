@@ -109,8 +109,6 @@ SettingsDialog::SettingsDialog(Settings* settings, QWidget* parent)
     cleanRow->addWidget(btnClean);
     v->addLayout(cleanRow);
 
-    // removed: blacklist editor
-
     // Wayland note and repo link
     v->addWidget(new QLabel(QStringLiteral("Wayland 环境下自动粘贴需 wtype/ydotool，缺失时仅复制不粘贴。")));
     auto* btnRepo = new QPushButton(QStringLiteral("项目主页"));

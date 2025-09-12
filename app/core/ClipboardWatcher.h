@@ -43,5 +43,4 @@ private:
     qint64 m_suppressId = 0;
     QString m_suppressText;
     QString m_suppressHash;
-    bool isBlacklisted(const QString& appName) const;
 };

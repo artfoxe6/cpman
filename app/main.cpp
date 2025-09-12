@@ -165,8 +165,6 @@ int main(int argc, char* argv[]) {
                          doSearch(popup.queryText(), popup.useDbChecked(), popup.onlyFavChecked());
                      });
 
-    // removed: tray add-foreground-app-to-blacklist wiring
-
     // Settings dialog wiring
     SettingsDialog settingsDlg(&settings);
     QObject::connect(&tray, &TrayIcon::settingsRequested, [&]{ settingsDlg.exec(); });
