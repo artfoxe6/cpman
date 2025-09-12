@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
     }
     ImageStore imageStore; imageStore.ensureDirs();
     InMemoryStore mem;
-    mem.setCapacity(std::clamp(settings.preloadCount(), 200, 5000));
+    mem.setCapacity(std::clamp(settings.preloadCount(), 1, 5000));
     mem.preload(db.fetchRecent(mem.capacity()));
 
     ClipboardWatcher watcher(&db, &mem, &imageStore, &settings);
@@ -172,7 +172,7 @@ int main(int argc, char* argv[]) {
     QObject::connect(&settingsDlg, &SettingsDialog::hotkeyChanged, [&](QKeySequence ks){ settings.setHotkey(ks); hotkey.unregister(); hotkey.registerHotkey(ks); });
     QObject::connect(&settingsDlg, &SettingsDialog::autoPasteChanged, [&](bool on){ settings.setAutoPaste(on); });
     QObject::connect(&settingsDlg, &SettingsDialog::preloadChanged, [&](int n){
-        const int clamped = std::clamp(n, 200, 5000);
+        const int clamped = std::clamp(n, 1, 5000);
         settings.setPreloadCount(clamped);
         mem.setCapacity(clamped);
         mem.preload(db.fetchRecent(mem.capacity()));

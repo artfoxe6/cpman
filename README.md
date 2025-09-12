@@ -68,7 +68,7 @@
 **设置项（QSettings）**
 - `hotkey/sequence`：默认 `Ctrl+Shift+M`
 - `paste/auto`：默认 `true`（Wayland 推荐 `false`）
-- `preload/count`：默认 `1000`（200~5000）
+- `preload/count`：默认 `1000`（1~5000）
 - `capture/allowRepeat`：默认 `false`
 - `capture/paused`：默认 `false`
 - `theme/mode`：`system|light|dark`

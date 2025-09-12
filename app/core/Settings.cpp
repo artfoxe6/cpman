@@ -56,10 +56,15 @@ void Settings::setPasteDelayMs(int ms) {
 }
 
 int Settings::preloadCount() const {
-    return m_settings.value(KEY_PRELOAD, 1000).toInt();
+    int v = m_settings.value(KEY_PRELOAD, 1000).toInt();
+    if (v < 1) v = 1;
+    if (v > 5000) v = 5000;
+    return v;
 }
 
 void Settings::setPreloadCount(int n) {
+    if (n < 1) n = 1;
+    if (n > 5000) n = 5000;
     m_settings.setValue(KEY_PRELOAD, n);
     emit changed();
 }
