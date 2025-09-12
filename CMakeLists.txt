@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(cpman LANGUAGES CXX OBJCXX)
+project(cpman LANGUAGES CXX)
+
+# Only require Objective-C++ when building on macOS
+if(APPLE)
+  enable_language(OBJCXX)
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

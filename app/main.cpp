@@ -171,7 +171,13 @@ int main(int argc, char* argv[]) {
     QObject::connect(&tray, &TrayIcon::settingsRequested, [&]{ settingsDlg.exec(); });
     QObject::connect(&settingsDlg, &SettingsDialog::hotkeyChanged, [&](QKeySequence ks){ settings.setHotkey(ks); hotkey.unregister(); hotkey.registerHotkey(ks); });
     QObject::connect(&settingsDlg, &SettingsDialog::autoPasteChanged, [&](bool on){ settings.setAutoPaste(on); });
-    QObject::connect(&settingsDlg, &SettingsDialog::preloadChanged, [&](int n){ settings.setPreloadCount(n); mem.setCapacity(std::clamp(n, 200, 5000)); mem.preload(db.fetchRecent(mem.capacity())); model.setItems(mem.items()); });
+    QObject::connect(&settingsDlg, &SettingsDialog::preloadChanged, [&](int n){
+        const int clamped = std::clamp(n, 200, 5000);
+        settings.setPreloadCount(clamped);
+        mem.setCapacity(clamped);
+        mem.preload(db.fetchRecent(mem.capacity()));
+        doSearch(popup.queryText(), popup.useDbChecked(), popup.onlyFavChecked());
+    });
     QObject::connect(&settingsDlg, &SettingsDialog::pasteDelayChanged, [&](int ms){ settings.setPasteDelayMs(ms); });
     QObject::connect(&settingsDlg, &SettingsDialog::cleanupRequested, [&](int days, int usageSkipGreaterThan){
         qInfo() << "Cleanup requested days=" << days << ", skip usage >" << usageSkipGreaterThan;

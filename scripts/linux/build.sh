@@ -13,6 +13,19 @@ echo "Building cpman for Linux..."
 echo "Project directory: $PROJECT_DIR"
 echo "Build directory: $BUILD_DIR"
 
+# Ensure Qt6 is installed
+if ! command -v qmake >/dev/null 2>&1 || ! qmake -query QT_VERSION 2>/dev/null | grep -q '^6'; then
+    echo "Qt6 not found, attempting to install..."
+    if command -v apt-get >/dev/null 2>&1; then
+        sudo apt-get update && sudo apt-get install -y qt6-base-dev
+    elif command -v yum >/dev/null 2>&1; then
+        sudo yum install -y qt6-qtbase-devel
+    else
+        echo "No supported package manager (apt or yum) found. Please install Qt6 manually."
+        exit 1
+    fi
+fi
+
 # Clean and create build directory
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
