@@ -25,4 +25,13 @@ struct HistoryItem {
     int appPid = 0;           // optional
 };
 
+inline bool operator==(const HistoryItem& a, const HistoryItem& b) {
+    return a.id == b.id && a.type == b.type && a.text == b.text &&
+           a.mediaPath == b.mediaPath && a.mime == b.mime &&
+           a.width == b.width && a.height == b.height && a.hash == b.hash &&
+           a.favorite == b.favorite && a.usageCount == b.usageCount &&
+           a.createdAt == b.createdAt && a.appName == b.appName &&
+           a.appPid == b.appPid;
+}
+
 Q_DECLARE_METATYPE(HistoryItem)

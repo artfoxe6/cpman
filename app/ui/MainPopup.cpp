@@ -20,6 +20,7 @@
 #include <QGraphicsDropShadowEffect>
 #include <QFrame>
 #include <QAction>
+#include "HistoryListModel.h"
 
 MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
@@ -369,16 +370,25 @@ void MainPopup::setListModel(QAbstractItemModel* model) {
         connect(m_list->selectionModel(), &QItemSelectionModel::currentChanged,
                 this, [this](const QModelIndex& current, const QModelIndex&){ updatePreviewFromIndex(current); });
     }
-    // Keep preview empty and clear selection after searches/model resets
+    // Restore selection after model resets if possible
     if (model) {
-        connect(model, &QAbstractItemModel::modelReset, this, [this]{
+        connect(model, &QAbstractItemModel::modelReset, this, [this, model]{
             if (!m_list) return;
-            m_list->clearSelection();
-            m_list->setCurrentIndex(QModelIndex());
-            if (m_preview) {
-                m_preview->clear();
+            qint64 prevId = m_currentItemId;
+            QModelIndex target;
+            if (prevId != 0) {
+                const QModelIndex start = model->index(0, 0);
+                const auto matches = model->match(start, HistoryListModel::IdRole, QVariant(prevId), 1, Qt::MatchExactly);
+                if (!matches.isEmpty()) target = matches.first();
             }
-            m_currentItemId = 0;
+            if (target.isValid()) {
+                m_list->setCurrentIndex(target);
+            } else {
+                m_list->clearSelection();
+                m_list->setCurrentIndex(QModelIndex());
+                if (m_preview) m_preview->clear();
+                m_currentItemId = 0;
+            }
         });
     }
 }

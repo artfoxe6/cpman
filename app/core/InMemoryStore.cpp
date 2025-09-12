@@ -41,16 +41,24 @@ QVector<HistoryItem> InMemoryStore::filterMemory(const QStringList& tokens, bool
 
 void InMemoryStore::setFavoriteById(qint64 id, bool on) {
     for (auto& it : m_items) {
-        if (it.id == id) { it.favorite = on; break; }
+        if (it.id == id) {
+            if (it.favorite != on) {
+                it.favorite = on;
+                emit itemUpdated(it);
+            }
+            break;
+        }
     }
-    emit itemsChanged();
 }
 
 void InMemoryStore::incrementUsageById(qint64 id) {
     for (auto& it : m_items) {
-        if (it.id == id) { it.usageCount += 1; break; }
+        if (it.id == id) {
+            it.usageCount += 1;
+            emit itemUpdated(it);
+            break;
+        }
     }
-    emit itemsChanged();
 }
 
 void InMemoryStore::retimeMoveToFront(qint64 id, qint64 createdAtMs) {

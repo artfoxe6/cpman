@@ -57,7 +57,19 @@ QHash<int, QByteArray> HistoryListModel::roleNames() const {
 }
 
 void HistoryListModel::setItems(const QVector<HistoryItem>& items) {
+    if (items == m_items) return;
     beginResetModel();
     m_items = items;
     endResetModel();
+}
+
+void HistoryListModel::onItemUpdated(const HistoryItem& item) {
+    for (int row = 0; row < m_items.size(); ++row) {
+        if (m_items[row].id == item.id) {
+            m_items[row] = item;
+            QModelIndex idx = index(row, 0);
+            emit dataChanged(idx, idx);
+            break;
+        }
+    }
 }
