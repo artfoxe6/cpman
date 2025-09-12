@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(cpman LANGUAGES CXX OBJCXX)
+project(cpman LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -24,6 +24,10 @@ set(CPACK_PACKAGE_VERSION_PATCH "0")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Cross-platform clipboard history manager")
 set(CPACK_PACKAGE_VENDOR "cpman")
 set(CPACK_PACKAGE_CONTACT "cpman@cpman.com")
+
+if(APPLE)
+  enable_language(OBJCXX)
+endif()
 
 if(APPLE)
   # macOS DMG configuration
