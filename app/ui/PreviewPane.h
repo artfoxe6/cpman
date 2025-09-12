@@ -15,7 +15,9 @@ public:
     void attachSettings(Settings* settings);
 
     void showText(qint64 id, const QString& text, bool favorite, int usageCount, const QString& appName);
-    void showImage(qint64 id, const QImage& img, bool favorite, int usageCount, const QString& appName);
+    void showImage(qint64 id, const QImage& img, bool favorite, int usageCount,
+                   const QString& appName, const QPixmap& scaled = QPixmap());
+    void setScaledPixmap(const QPixmap& pix);
     void clear();
 
     void triggerToggleFavorite();
