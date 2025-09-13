@@ -55,13 +55,31 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
     shadow->setColor(QColor(0, 0, 0, 80));
     m_container->setGraphicsEffect(shadow);
 
-    auto* top = new QHBoxLayout();
-    top->setContentsMargins(6, 2, 6, 6);
-    top->setSpacing(8);
+    // Top container for search and checkboxes
+    auto* topContainer = new QWidget();
+    auto* topContainerLayout = new QVBoxLayout(topContainer);
+    topContainerLayout->setContentsMargins(6, 2, 6, 6);
+    topContainerLayout->setSpacing(6);
+
+    // Search line - takes full width
+    auto* searchLayout = new QHBoxLayout();
+    searchLayout->setContentsMargins(0, 0, 0, 0);
     m_search = new QLineEdit();
     m_search->setPlaceholderText(QStringLiteral("搜索…"));
+    searchLayout->addWidget(m_search, 1);
+    topContainerLayout->addLayout(searchLayout);
+
+    // Checkboxes - horizontal layout below search
+    auto* checkboxesLayout = new QHBoxLayout();
+    checkboxesLayout->setContentsMargins(0, 0, 0, 0);
+    checkboxesLayout->setSpacing(20);
     m_useDb = new QCheckBox(QStringLiteral("数据库"));
     m_onlyFav = new QCheckBox(QStringLiteral("收藏列表"));
+    checkboxesLayout->addWidget(m_useDb);
+    checkboxesLayout->addWidget(m_onlyFav);
+    checkboxesLayout->addStretch();
+    topContainerLayout->addLayout(checkboxesLayout);
+
     // Route focus of the popup to the search box whenever the window itself gains focus
     setFocusProxy(m_search);
     // Control appearance tweaks
@@ -123,10 +141,7 @@ MainPopup::MainPopup(QWidget* parent) : QWidget(parent) {
         });
     });
 #endif
-    top->addWidget(m_search, 1);
-    top->addWidget(m_useDb);
-    top->addWidget(m_onlyFav);
-    v->addLayout(top);
+    v->addWidget(topContainer);
 
     auto* bottom = new QHBoxLayout();
     m_list = new QListView();
