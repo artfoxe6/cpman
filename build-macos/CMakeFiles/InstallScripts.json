@@ -1,9 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/opt/code/cx/cpman/build-macos/cmake_install.cmake",
-		"/opt/code/cx/cpman/build-macos/app/cmake_install.cmake",
-		"/opt/code/cx/cpman/build-macos/app/third_party/QHotkey-build/cmake_install.cmake"
-	],
-	"Parallel" : false
-}
